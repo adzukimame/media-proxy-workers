@@ -59,13 +59,13 @@ app.get('*', async (ctx) => {
                 signal: AbortSignal.timeout(60 * 1000),
             });
         } catch (e) {
-            throw new StatusError('An error occured while fetching content', 500, e as Error);
+            throw new StatusError('An error occured while fetching content (avatar image url)', 500, e as Error);
         }
 
         const loc = rdr.headers.get('Location');
 
         if (rdr.status < 300 || rdr.status >= 400 || loc === null) {
-            throw new StatusError(`Target resource could not be fetched (Received status: ${rdr.status})`, 404);
+            throw new StatusError(`Target resource could not be fetched (avatar image url, received status: ${rdr.status})`, 404);
         }
 
         ctx.header('Cache-Control', 'public, immutable, max-age=604800');
