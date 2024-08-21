@@ -1,6 +1,10 @@
 export function convertToStatic(file: { mime: string; ext: string | null; filename: string; buffer: ArrayBuffer }):
-  { mime: string; ext: string | null; filename: string; buffer: ArrayBuffer }
 {
+  mime: string;
+  ext: string | null;
+  filename: string;
+  buffer: ArrayBuffer;
+} {
   if (file.mime === 'image/webp') {
     return {
       mime: 'image/webp',
@@ -8,21 +12,24 @@ export function convertToStatic(file: { mime: string; ext: string | null; filena
       filename: file.filename,
       buffer: convertWebpToStatic(file.buffer),
     };
-  } else if (file.mime === 'image/apng') {
+  }
+  else if (file.mime === 'image/apng') {
     return {
       mime: 'image/apng',
       ext: 'apng',
       filename: file.filename,
       buffer: convertApngToStatic(file.buffer),
     };
-  } else if (file.mime === 'image/gif') {
+  }
+  else if (file.mime === 'image/gif') {
     return {
       mime: 'image/gif',
       ext: 'gif',
       filename: file.filename,
       buffer: convertGifToStatic(file.buffer),
     };
-  } else {
+  }
+  else {
     return file;
   }
 }
@@ -52,7 +59,8 @@ function convertWebpToStatic(buffer: ArrayBuffer): ArrayBuffer {
       if (copiedAnmf) {
         srcIdx += 8 + chunkSize;
         continue;
-      } else {
+      }
+      else {
         copiedAnmf = true;
       }
     }
@@ -92,9 +100,9 @@ function convertApngToStatic(buffer: ArrayBuffer): ArrayBuffer {
     const chunkSize = (src[srcIdx] << 24) + (src[srcIdx + 1] << 16) + (src[srcIdx + 2] << 8) + (src[srcIdx + 3]);
 
     if (
-      src[srcIdx + 4] === 0x61 && src[srcIdx + 5] === 0x63 && src[srcIdx + 6] === 0x54 && src[srcIdx + 7] === 0x4c || // acTL
-      src[srcIdx + 4] === 0x66 && src[srcIdx + 5] === 0x63 && src[srcIdx + 6] === 0x54 && src[srcIdx + 7] === 0x4c || // fcTL
-      src[srcIdx + 4] === 0x66 && src[srcIdx + 5] === 0x64 && src[srcIdx + 6] === 0x41 && src[srcIdx + 7] === 0x54    // fdAT
+      (src[srcIdx + 4] === 0x61 && src[srcIdx + 5] === 0x63 && src[srcIdx + 6] === 0x54 && src[srcIdx + 7] === 0x4c) // acTL
+      || (src[srcIdx + 4] === 0x66 && src[srcIdx + 5] === 0x63 && src[srcIdx + 6] === 0x54 && src[srcIdx + 7] === 0x4c) // fcTL
+      || (src[srcIdx + 4] === 0x66 && src[srcIdx + 5] === 0x64 && src[srcIdx + 6] === 0x41 && src[srcIdx + 7] === 0x54) // fdAT
     ) {
       // skip
       srcIdx += 12 + chunkSize;
@@ -120,8 +128,8 @@ function convertGifToStatic(buffer: ArrayBuffer): ArrayBuffer {
   let dstIdx = 13;
   dst.set(src.subarray(0, 13), 0); // just before Global Color Table
 
-  let globalColorTableFlag = (src[10] & 0b10000000) !== 0;
-  let globalColorTableSize = 2 ** ((src[10] & 0b00000111) + 1);
+  const globalColorTableFlag = (src[10] & 0b10000000) !== 0;
+  const globalColorTableSize = 2 ** ((src[10] & 0b00000111) + 1);
 
   if (globalColorTableFlag) {
     dst.set(src.subarray(srcIdx, srcIdx + globalColorTableSize * 3), dstIdx);
@@ -145,7 +153,7 @@ function convertGifToStatic(buffer: ArrayBuffer): ArrayBuffer {
           // set loop count to 1
           dst[dstIdx + 16] = 1;
           dst[dstIdx + 17] = 0;
-          
+
           srcIdx += 19;
           dstIdx += 19;
 
@@ -175,7 +183,8 @@ function convertGifToStatic(buffer: ArrayBuffer): ArrayBuffer {
         if (blockSize === 0) {
           srcIdx += 1;
           break;
-        } else {
+        }
+        else {
           srcIdx += 1 + blockSize;
         }
       }
@@ -185,7 +194,7 @@ function convertGifToStatic(buffer: ArrayBuffer): ArrayBuffer {
       dst.set(src.subarray(srcIdx, srcIdx + 10), dstIdx);
 
       const localColorTableFlag = (src[srcIdx + 9] & 0b10000000) !== 0;
-      const localColorTableSize =  2 ** ((src[srcIdx + 9] & 0b00000111) + 1);
+      const localColorTableSize = 2 ** ((src[srcIdx + 9] & 0b00000111) + 1);
 
       srcIdx += 10;
       dstIdx += 10;
@@ -207,7 +216,8 @@ function convertGifToStatic(buffer: ArrayBuffer): ArrayBuffer {
           srcIdx += 1;
           dstIdx += 1;
           break;
-        } else {
+        }
+        else {
           srcIdx += 1 + blockSize;
           dstIdx += 1 + blockSize;
         }
