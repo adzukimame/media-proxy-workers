@@ -1,23 +1,51 @@
 # Media Proxy for Misskey on Cloudflare Workers
 
-## Usage
+## 事前準備
+
+依存パッケージをインストール：
+
 ```sh
 pnpm install --frozen-lockfile
 ```
 
-Then
-- comment out all contents other than last export statement of `node_modules/file-type/browser.js`
-- comment out `node_modules/content-disposition/index.js:22` and add `import { basename } from 'node:path'` to line 24
-- comment out `node_modules/safe-buffer/index.js:3` and add `import * as buffer from 'node:buffer'` below
+次に：
+- `node_modules/file-type/browser.js` の最後の `export` 文以外をコメントアウト
+- `node_modules/content-disposition/index.js:22` をコメントアウトして 24 行目に `import { basename } from 'node:path'` を追記
+- `node_modules/safe-buffer/index.js:3` をコメントアウトして下に `import * as buffer from 'node:buffer'` を追記
 
-Finally
+## プレビュー
+
+ローカルでプレビュー：
+
 ```sh
-cp wrangler.example.toml wrangler.toml
-echo 'ENV = "development"' > .dev.vars # for testing local
-pnpm wrangler dev    # for testing local
-pnpm wrangler deploy # to deploy
+echo 'ENV = "development"' >> .dev.vars
+pnpm wrangler dev
 ```
 
-## Notes
-- Set `AVATAR_REDIRECT_ENABLED` variable to true and `AVATAR_REDIRECT_HOST` variable to your Misskey server's host name (like misskey.tld) to avoid requests are redirected and backs to Workers and results in 5xx error.
-- Set `CLOUD_LOGGING_ENABLED` variable to true and `CLOUD_LOGGING_CREDENTIAL_JSON` secret variable to your preferred Google Cloud sevice account's credential to send errors to Cloud Logging. Log names could be modifed by setting `CLOUD_LOGGING_LOGNAME` variable. If `CLOUD_LOGGING_LOGNAME` is not set, log name will be `misskey-media-proxy`.
+## デプロイ
+
+デプロイ：
+
+```sh
+pnpm wrangler deploy
+```
+
+## メモ
+
+#### アバター画像へのリクエストが Workers に複数回リダイレクトされて、5xx エラーになるのを防ぐ
+
+Environment Variables で
+
+`AVATAR_REDIRECT_ENABLED` に `true`
+
+`AVATAR_REDIRECT_HOST` に Misskey サーバーのホスト名（例：`misskey.tld`）を指定する。
+
+#### エラー時にログを Cloud Logging に送信する
+
+Environment Variables で
+
+`CLOUD_LOGGING_ENABLED` に `true`
+
+`CLOUD_LOGGING_CREDENTIAL_JSON` に Google Cloud のサービスアカウントの認証情報を指定する。
+
+`CLOUD_LOGGING_LOGNAME` に値を設定すると、`logName` を変更できる。
