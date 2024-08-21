@@ -8,11 +8,6 @@
 pnpm install --frozen-lockfile
 ```
 
-次に：
-- `node_modules/file-type/browser.js` の最後の `export` 文以外をコメントアウト
-- `node_modules/content-disposition/index.js:22` をコメントアウトして 24 行目に `import { basename } from 'node:path'` を追記
-- `node_modules/safe-buffer/index.js:3` をコメントアウトして下に `import * as buffer from 'node:buffer'` を追記
-
 ## プレビュー
 
 ローカルでプレビュー：

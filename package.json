@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "deploy": "wrangler deploy",
+    "postinstall": "node ./post-install.js",
     "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
