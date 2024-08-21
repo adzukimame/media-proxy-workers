@@ -8,15 +8,18 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc --project test --noEmit",
+    "test": "vitest"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.4.24",
     "@cloudflare/workers-types": "^4.20240405.0",
     "@stylistic/eslint-plugin": "^2.6.4",
     "@types/content-disposition": "^0.5.8",
     "eslint": "^9.9.0",
     "typescript": "^5.3.3",
-    "typescript-eslint": "^8.2.0"
+    "typescript-eslint": "^8.2.0",
+    "vitest": "1.5.0"
   },
   "dependencies": {
     "content-disposition": "^0.5.4",
