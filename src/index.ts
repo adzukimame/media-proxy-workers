@@ -196,7 +196,7 @@ app.onError(async (err, ctx) => {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const cache = await caches.default.match(request, { ignoreMethod: true });
-    if (cache != undefined && env.ENV === 'production') {
+    if (cache != undefined && env.ENV !== 'development') {
       return cache;
     }
 
@@ -232,7 +232,7 @@ export default {
 
     const res = await app.fetch(request, env, ctx);
 
-    if (request.method === 'GET' && env.ENV === 'production') {
+    if (request.method === 'GET' && env.ENV !== 'development') {
       await caches.default.put(request, res.clone());
     }
 
