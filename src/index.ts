@@ -17,7 +17,7 @@ export interface Env extends Record<string, unknown> {
   CLOUD_LOGGING_CREDENTIAL_JSON?: string;
 }
 
-const app = new Hono<{
+export const app = new Hono<{
   Bindings: Env;
 }>();
 
