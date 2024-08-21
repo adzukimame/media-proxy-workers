@@ -32,15 +32,42 @@ app.use(async (ctx, next) => {
   ctx.header('X-XSS-Protection', '0');
   // eslint-disable-next-line @stylistic/quotes
   ctx.header('Content-Security-Policy', "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; sandbox;");
+
+  const secFetchSite = ctx.req.header('sec-fetch-site');
+  const secFetchMode = ctx.req.header('sec-fetch-mode');
+  const secFetchDest = ctx.req.header('sec-fetch-dest');
+
+  if (secFetchSite === 'cross-site') {
+    if (
+      ctx.req.method === 'GET'
+      && secFetchMode === 'navigate'
+      && (secFetchDest === 'document' || secFetchDest === 'empty')
+    ) {
+      // nop
+    }
+    else if (
+      ctx.req.method === 'GET'
+      && secFetchMode === 'no-cors'
+      && secFetchDest === 'image'
+      && ctx.req.path === '/favicon.ico'
+    ) {
+      // nop
+    }
+    else {
+      ctx.header('Cache-Control', 'private');
+      return ctx.body(null, 400);
+    }
+  }
+
   await next();
 });
 
-app.get('*', async (ctx) => {
-  if (ctx.req.path === '/favicon.ico') {
-    ctx.header('Cache-Control', 'public, max-age=31536000, immutable');
-    return ctx.body(null, 204);
-  }
+app.get('/favicon.ico', (ctx) => {
+  ctx.header('Cache-Control', 'public, max-age=31536000, immutable');
+  return ctx.body(null, 204);
+});
 
+app.get('*', async (ctx) => {
   let proxyUrl: URL | string | undefined = ctx.req.query('url');
 
   if (proxyUrl === undefined || !URL.canParse(proxyUrl)) {
@@ -198,36 +225,6 @@ export default {
     const cache = await caches.default.match(request, { ignoreMethod: true });
     if (cache != undefined && env.ENV !== 'development') {
       return cache;
-    }
-
-    const secFetchSite = request.headers.get('sec-fetch-site');
-    const secFetchMode = request.headers.get('sec-fetch-mode');
-    const secFetchDest = request.headers.get('sec-fetch-dest');
-
-    if (secFetchSite === 'cross-site') {
-      if (request.method === 'GET' && secFetchMode === 'navigate' && secFetchDest === 'document') {
-        // nop
-      }
-      else if (request.method === 'GET' && secFetchMode === 'navigate' && secFetchDest === 'empty') {
-        // nop
-      }
-      else {
-        return new Response(null, {
-          status: 400,
-          headers: {
-            'Cache-Control': 'private',
-            'X-Robots-Tag': 'noindex, nofollow, noarchive, nosnippet, noimageindex, noai, noimageai',
-            'Cross-Origin-Opener-Policy': 'same-origin',
-            'Origin-Agent-Cluster': '?1',
-            'Referrer-Policy': 'same-origin',
-            'X-Content-Type-Options': 'nosniff',
-            'X-Frame-Options': 'DENY',
-            'X-XSS-Protection': '0',
-            // eslint-disable-next-line @stylistic/quotes
-            'Content-Security-Policy': "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; sandbox;",
-          },
-        });
-      }
     }
 
     const res = await app.fetch(request, env, ctx);
