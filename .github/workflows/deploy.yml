@@ -1,13 +1,15 @@
-name: Test
+name: Deploy
 
 on:
   push:
     branches:
       - main
-  pull_request:
+
+env:
+  NODE_ENV: production
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
 
     strategy:
@@ -25,6 +27,11 @@ jobs:
           cache: 'pnpm'
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - run: echo 'ENV = "development"' >> .dev.vars
-      - name: Test
-        run: pnpm run test
+      - name: Deploy
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          quiet: true
+          wranglerVersion: "3.72.1"
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
