@@ -33,19 +33,3 @@ import * as fs from 'node:fs';
 
   fs.writeFileSync('node_modules/file-type/browser.js', content);
 }
-
-// `node_modules/safe-buffer/index.js:3`
-// `require` 文を `import` 文に変更
-{
-  const content = fs.readFileSync('node_modules/safe-buffer/index.js');
-
-  /* eslint-disable @stylistic/quotes */
-  fs.writeFileSync(
-    'node_modules/safe-buffer/index.js',
-    content.toString('utf8').replace(
-      "var buffer = require('buffer')",
-      "import * as buffer from 'node:buffer'"
-    )
-  );
-  /* eslint-enable @stylistic/quotes */
-}
