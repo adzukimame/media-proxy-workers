@@ -1,14 +1,16 @@
 version: 2
 updates:
-  - package-ecosystem: npm
-    directory: /
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: daily
-      timezone: Asia/Tokyo
+      interval: "weekly"
+      day: "saturday"
+      time: "15:30"
+      timezone: "Asia/Tokyo"
     groups:
       dependencies:
-        dependency-type: production
-        update-types: patch
+        dependency-type: "production"
+        update-types: "patch"
       devDependencies:
-        dependency-type: development
-        pdate-types: patch
+        dependency-type: "development"
+        pdate-types: "patch"
