@@ -4,8 +4,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "saturday"
-      time: "15:45"
       timezone: "Asia/Tokyo"
     groups:
       dependencies:
