@@ -12,13 +12,13 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.4.24",
-    "@cloudflare/workers-types": "^4.20240405.0",
-    "@stylistic/eslint-plugin": "^2.6.4",
+    "@cloudflare/vitest-pool-workers": "^0.4.27",
+    "@cloudflare/workers-types": "^4.20240821.1",
+    "@stylistic/eslint-plugin": "^2.7.2",
     "@types/content-disposition": "^0.5.8",
-    "eslint": "^9.9.0",
-    "typescript": "^5.3.3",
-    "typescript-eslint": "^8.2.0",
+    "eslint": "^9.9.1",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.3.0",
     "vitest": "1.5.0"
   },
   "dependencies": {
