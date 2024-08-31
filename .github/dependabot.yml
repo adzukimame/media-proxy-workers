@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+      timezone: Asia/Tokyo
+    groups:
+      dependencies:
+        dependency-type: production
+        update-types: patch
+      devDependencies:
+        dependency-type: development
+        pdate-types: patch
