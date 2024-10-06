@@ -21,8 +21,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       wrangler:
-        specifier: ^3.78.12
-        version: 3.78.12(@cloudflare/workers-types@4.20240925.0)
+        specifier: ^3.80.0
+        version: 3.80.0(@cloudflare/workers-types@4.20240925.0)
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.5.12
@@ -1544,6 +1544,16 @@ packages:
       '@cloudflare/workers-types':
         optional: true
 
+  wrangler@3.80.0:
+    resolution: {integrity: sha512-c9aN7Buf7XgTPpQkw1d0VjNRI4qg3m35PTg70Tg4mOeHwHGjsd74PAsP1G8BjpdqDjfWtsua7tj1g4M3/5dYNQ==}
+    engines: {node: '>=16.17.0'}
+    hasBin: true
+    peerDependencies:
+      '@cloudflare/workers-types': ^4.20240925.0
+    peerDependenciesMeta:
+      '@cloudflare/workers-types':
+        optional: true
+
   ws@8.18.0:
     resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
     engines: {node: '>=10.0.0'}
@@ -2950,6 +2960,33 @@ snapshots:
       '@cloudflare/workerd-windows-64': 1.20240925.0
 
   wrangler@3.78.12(@cloudflare/workers-types@4.20240925.0):
+    dependencies:
+      '@cloudflare/kv-asset-handler': 0.3.4
+      '@cloudflare/workers-shared': 0.5.4
+      '@esbuild-plugins/node-globals-polyfill': 0.2.3(esbuild@0.17.19)
+      '@esbuild-plugins/node-modules-polyfill': 0.2.2(esbuild@0.17.19)
+      blake3-wasm: 2.1.5
+      chokidar: 3.6.0
+      esbuild: 0.17.19
+      miniflare: 3.20240925.0
+      nanoid: 3.3.7
+      path-to-regexp: 6.3.0
+      resolve: 1.22.8
+      resolve.exports: 2.0.2
+      selfsigned: 2.4.1
+      source-map: 0.6.1
+      unenv: unenv-nightly@2.0.0-20240919-125358-9a64854
+      workerd: 1.20240925.0
+      xxhash-wasm: 1.0.2
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20240925.0
+      fsevents: 2.3.3
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  wrangler@3.80.0(@cloudflare/workers-types@4.20240925.0):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@cloudflare/workers-shared': 0.5.4
