@@ -3,7 +3,9 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "saturday"
+      time: "06:00"
       timezone: "Asia/Tokyo"
     groups:
       dependencies:
