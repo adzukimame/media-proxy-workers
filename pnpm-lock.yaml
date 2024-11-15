@@ -15,8 +15,8 @@ importers:
         specifier: ^19.6.0
         version: 19.6.0
       hono:
-        specifier: ^4.6.9
-        version: 4.6.9
+        specifier: ^4.6.10
+        version: 4.6.10
       is-svg:
         specifier: ^5.1.0
         version: 5.1.0
@@ -997,8 +997,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.6.9:
-    resolution: {integrity: sha512-p/pN5yZLuZaHzyAOT2nw2/Ud6HhJHYmDNGH6Ck1OWBhPMVeM1r74jbCRwNi0gyFRjjbsGgoHbOyj7mT1PDNbTw==}
+  hono@4.6.10:
+    resolution: {integrity: sha512-IXXNfRAZEahFnWBhUUlqKEGF9upeE6hZoRZszvNkyAz/CYp+iVbxm3viMvStlagRJohjlBRGOQ7f4jfcV0XMGg==}
     engines: {node: '>=16.9.0'}
 
   human-signals@5.0.0:
@@ -2451,7 +2451,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.6.9: {}
+  hono@4.6.10: {}
 
   human-signals@5.0.0: {}
 
