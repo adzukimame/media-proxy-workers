@@ -24,7 +24,7 @@
   "dependencies": {
     "content-disposition": "^0.5.4",
     "file-type": "^19.6.0",
-    "hono": "^4.6.14",
+    "hono": "^4.6.15",
     "is-svg": "^5.1.0",
     "wrangler": "^3.99.0"
   },
