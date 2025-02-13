@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20]
+        node-version: [22]
 
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +25,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
+      - name: Update corepack
+        run: npm install -g corepack@latest
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - name: Deploy
