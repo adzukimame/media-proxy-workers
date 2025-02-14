@@ -15,14 +15,14 @@ importers:
         specifier: ^19.6.0
         version: 19.6.0
       hono:
-        specifier: ^4.7.0
-        version: 4.7.0
+        specifier: ^4.7.1
+        version: 4.7.1
       is-svg:
         specifier: ^5.1.0
         version: 5.1.0
       wrangler:
-        specifier: ^3.108.1
-        version: 3.108.1(@cloudflare/workers-types@4.20250204.0)
+        specifier: ^3.109.1
+        version: 3.109.1(@cloudflare/workers-types@4.20250204.0)
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.6.14
@@ -1050,8 +1050,8 @@ packages:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
 
-  hono@4.7.0:
-    resolution: {integrity: sha512-hV97aIR4WYbG30k234sD9B3VNr1ZWdQRmrVF76LKFlmI7O9Yo70mG9+mFwyQ6Sjrz4wH71GfnBxv6CPjcx3QNw==}
+  hono@4.7.1:
+    resolution: {integrity: sha512-V3eWoPkBxoNgFCkSc5Y5rpLF6YoQQx1pkYO4qrF6YfOw8RZbujUNlJLZCxh0z9gZct70+je2Ih7Zrdpv21hP9w==}
     engines: {node: '>=16.9.0'}
 
   human-signals@5.0.0:
@@ -1168,6 +1168,11 @@ packages:
 
   miniflare@3.20250204.0:
     resolution: {integrity: sha512-f7tezEkOvVRVHIVul2EbTyKvWJCXpTDRAOxTxtD4N92+YI8PC2P8AvO4Z30vlN61r5Pje33fTBG8G1fEwSZIqQ==}
+    engines: {node: '>=16.13'}
+    hasBin: true
+
+  miniflare@3.20250204.1:
+    resolution: {integrity: sha512-B4PQi/Ai4d0ZTWahQwsFe5WAfr1j8ISMYxJZTc56g2/btgbX+Go099LmojAZY/fMRLhIYsglcStW8SeW3f/afA==}
     engines: {node: '>=16.13'}
     hasBin: true
 
@@ -1559,6 +1564,16 @@ packages:
 
   wrangler@3.108.1:
     resolution: {integrity: sha512-SuiMv/ys52Cu7r6CVRXJT/GvneXHoB0ef5nGBWghSWyHxUSIm4KavGO6F/hTphn+WmSpHYQt3xNl5hdxk6rJlA==}
+    engines: {node: '>=16.17.0'}
+    hasBin: true
+    peerDependencies:
+      '@cloudflare/workers-types': ^4.20250204.0
+    peerDependenciesMeta:
+      '@cloudflare/workers-types':
+        optional: true
+
+  wrangler@3.109.1:
+    resolution: {integrity: sha512-1Jx+nZ6eCXPQ2rsGdrV6Qy/LGvhpqudeuTl4AYHl9P8Zugp44Uzxnj5w11qF4v/rv1dOZoA5TydSt9xMFfhpKg==}
     engines: {node: '>=16.17.0'}
     hasBin: true
     peerDependencies:
@@ -2490,7 +2505,7 @@ snapshots:
 
   has-flag@4.0.0: {}
 
-  hono@4.7.0: {}
+  hono@4.7.1: {}
 
   human-signals@5.0.0: {}
 
@@ -2584,6 +2599,23 @@ snapshots:
   mimic-fn@4.0.0: {}
 
   miniflare@3.20250204.0:
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      acorn: 8.14.0
+      acorn-walk: 8.3.2
+      exit-hook: 2.2.1
+      glob-to-regexp: 0.4.1
+      stoppable: 1.1.0
+      undici: 5.28.5
+      workerd: 1.20250204.0
+      ws: 8.18.0
+      youch: 3.2.3
+      zod: 3.22.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  miniflare@3.20250204.1:
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       acorn: 8.14.0
@@ -3002,6 +3034,25 @@ snapshots:
       blake3-wasm: 2.1.5
       esbuild: 0.17.19
       miniflare: 3.20250204.0
+      path-to-regexp: 6.3.0
+      unenv: 2.0.0-rc.1
+      workerd: 1.20250204.0
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20250204.0
+      fsevents: 2.3.3
+      sharp: 0.33.5
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  wrangler@3.109.1(@cloudflare/workers-types@4.20250204.0):
+    dependencies:
+      '@cloudflare/kv-asset-handler': 0.3.4
+      '@esbuild-plugins/node-globals-polyfill': 0.2.3(esbuild@0.17.19)
+      '@esbuild-plugins/node-modules-polyfill': 0.2.2(esbuild@0.17.19)
+      blake3-wasm: 2.1.5
+      esbuild: 0.17.19
+      miniflare: 3.20250204.1
       path-to-regexp: 6.3.0
       unenv: 2.0.0-rc.1
       workerd: 1.20250204.0
