@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "content-disposition": "^0.5.4",
-    "file-type": "^19.6.0",
+    "file-type": "^20.1.0",
     "hono": "^4.7.2",
     "is-svg": "^5.1.0",
     "wrangler": "^3.109.2"
