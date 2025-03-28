@@ -12,13 +12,13 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.3",
-    "@cloudflare/workers-types": "^4.20250320.0",
+    "@cloudflare/vitest-pool-workers": "^0.8.8",
+    "@cloudflare/workers-types": "^4.20250327.0",
     "@stylistic/eslint-plugin": "^4.2.0",
     "@types/content-disposition": "^0.5.8",
     "eslint": "^9.23.0",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.27.0",
+    "typescript-eslint": "^8.28.0",
     "vitest": "1.5.0"
   },
   "dependencies": {
