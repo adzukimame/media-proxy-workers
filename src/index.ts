@@ -60,6 +60,7 @@ app.use(async (ctx, next) => {
   }
 
   await next();
+  return;
 });
 
 app.get('/favicon.ico', (ctx) => {
@@ -241,7 +242,7 @@ async function downloadAndDetectTypeFromUrl(url: URL): Promise<{
   mime: string;
   ext: string | null;
   filename: string;
-  buffer: ArrayBuffer;
+  buffer: Uint8Array;
 }> {
   const { filename, buffer } = await downloadUrl(url);
 

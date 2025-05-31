@@ -45,7 +45,7 @@ describe.each([
   { type: 'PNG', url: PNG_IMG_URL },
   { type: 'WebP', url: WEBP_IMG_URL },
   { type: 'GIF', url: GIF_IMG_URL },
-])('$type画像が', ({ _type, url }: { [x: string]: string }) => {
+])('$type画像が', ({ url }) => {
   it('配信できる', async () => {
     const res = await SELF.fetch(`http://example.local/?url=${encodeURIComponent(url)}`);
     expect(res.status).toBe(200);

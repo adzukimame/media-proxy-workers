@@ -8,6 +8,6 @@ export class StatusError extends Error {
     this.name = 'StatusError';
     this.statusCode = statusCode;
     this.isClientError = this.statusCode >= 400 && this.statusCode < 500;
-    this.origin = origin;
+    if (origin) this.origin = origin;
   }
 }

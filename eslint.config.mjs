@@ -6,7 +6,7 @@ export default [
   {
     files: ['**/*.{js,mjs,ts}'],
   },
-  stylistic.configs['recommended-flat'],
+  stylistic.configs.recommended,
   pluginJs.configs.recommended,
   ...tsEslint.configs.recommended,
   {
