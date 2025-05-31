@@ -56,7 +56,7 @@ describe('\'GIF\'画像が', () => {
   describe.each([
     { query: 'static' },
     { query: 'preview' },
-  ])('$queryパラメータのあるときに', ({ query }: { query: string }) => {
+  ])('$queryパラメータのあるときに', ({ query }) => {
     it('変換して返される', async () => {
       const res = await SELF.fetch(`http://example.local/?url=${encodeURIComponent(GIF_IMG_URL)}&${query}=1`);
       expect(res.status).toBe(200);
