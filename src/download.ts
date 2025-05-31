@@ -7,7 +7,7 @@ export type DownloadConfig = {
   maxSize: number;
 };
 
-export const defaultDownloadConfig = {
+export const defaultDownloadConfig: DownloadConfig = {
   userAgent: `MisskeyMediaProxy/0.0.24`,
   maxSize: 262144000,
 };

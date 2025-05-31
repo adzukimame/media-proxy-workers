@@ -34,6 +34,8 @@ export function convertToStatic(file: { mime: string; ext: string | null; filena
   }
 }
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- アクセス前に添え字をすべてチェックする */
+
 function convertWebpToStatic(src: Uint8Array): Uint8Array {
   // https://developers.google.com/speed/webp/docs/riff_container#extended_file_format
 
@@ -284,3 +286,5 @@ function convertGifToStatic(src: Uint8Array): Uint8Array {
 
   return dst.subarray(0, dstIdx);
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion */

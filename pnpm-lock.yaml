@@ -20,9 +20,15 @@ importers:
       is-svg:
         specifier: ^6.0.0
         version: 6.0.0
+      secure-json-parse:
+        specifier: ^4.0.0
+        version: 4.0.0
       wrangler:
         specifier: ^4.18.0
         version: 4.18.0(@cloudflare/workers-types@4.20250523.0)
+      zod:
+        specifier: ^3.25.42
+        version: 3.25.42
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.8.32
@@ -1406,6 +1412,9 @@ packages:
   sax@1.4.1:
     resolution: {integrity: sha512-+aWOz7yVScEGoKNd4PA10LZ8sk0A/z5+nXQG5giUO5rprX9jgYsTdov9qCchZiPIZezbZH+jRut8nPodFAX4Jg==}
 
+  secure-json-parse@4.0.0:
+    resolution: {integrity: sha512-dxtLJO6sc35jWidmLxo7ij+Eg48PM/kleBsxpC8QJE0qJICe+KawkDQmvCMZUr9u7WKVHgMW6vy3fQ7zMiFZMA==}
+
   semver@7.7.2:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
@@ -1672,8 +1681,8 @@ packages:
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
-  zod@3.25.27:
-    resolution: {integrity: sha512-xkYsE+ztNLzBeoAG8Ipd2ICr86gyMpovQlB+Vid1LT7V16/Dj0z+Up1u1qxNX58cmJ/AtG2mvGw/7+jK48xEYw==}
+  zod@3.25.42:
+    resolution: {integrity: sha512-PcALTLskaucbeHc41tU/xfjfhcz8z0GdhhDcSgrCTmSazUuqnYqiXO63M0QUBVwpBlsLsNVn5qHSC5Dw3KZvaQ==}
 
 snapshots:
 
@@ -1704,7 +1713,7 @@ snapshots:
       semver: 7.7.2
       vitest: 1.5.0(@types/node@22.7.5)
       wrangler: 4.16.1(@cloudflare/workers-types@4.20250523.0)
-      zod: 3.25.27
+      zod: 3.25.42
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - bufferutil
@@ -2910,6 +2919,8 @@ snapshots:
 
   sax@1.4.1: {}
 
+  secure-json-parse@4.0.0: {}
+
   semver@7.7.2: {}
 
   sharp@0.33.5:
@@ -3184,4 +3195,4 @@ snapshots:
 
   zod@3.22.3: {}
 
-  zod@3.25.27: {}
+  zod@3.25.42: {}
