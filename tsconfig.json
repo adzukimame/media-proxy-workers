@@ -8,7 +8,7 @@
 		"moduleResolution": "bundler",
 		"types": ["@cloudflare/workers-types/2023-07-01"],
 		"resolveJsonModule": true,
-		"allowJs": true,
+		"checkJs": true,
 		"noEmit": true,
 		"isolatedModules": true,
 		"allowSyntheticDefaultImports": true,
@@ -16,8 +16,11 @@
 		"strict": true,
 		"skipLibCheck": true
 	},
+	"include": [
+		"./**/*"
+	],
 	"exclude": [
-		"./test/**",
-		"./coverage"
+		"./test/**/*",
+		"./coverage/**/*"
 	]
 }

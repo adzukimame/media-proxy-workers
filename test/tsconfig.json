@@ -3,10 +3,10 @@
   "compilerOptions": {
     "moduleResolution": "bundler",
     "types": [
-      "@cloudflare/workers-types/experimental",
+      "@cloudflare/workers-types/2023-07-01",
       "@cloudflare/vitest-pool-workers"
     ]
   },
-  "include": ["./**/*.ts"],
+  "include": ["./**/*"],
   "exclude": []
 }
