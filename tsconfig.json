@@ -16,5 +16,8 @@
 		"strict": true,
 		"skipLibCheck": true
 	},
-	"exclude": ["./test/**"]
+	"exclude": [
+		"./test/**",
+		"./coverage"
+	]
 }
