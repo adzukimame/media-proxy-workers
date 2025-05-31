@@ -1,14 +1,23 @@
-import pluginJs from '@eslint/js';
-import tsEslint from 'typescript-eslint';
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
 import stylistic from '@stylistic/eslint-plugin';
 
-export default [
+export default tseslint.config(
   {
     files: ['**/*.{js,mjs,ts}'],
   },
-  stylistic.configs['recommended-flat'],
-  pluginJs.configs.recommended,
-  ...tsEslint.configs.recommended,
+  eslint.configs.recommended,
+  stylistic.configs.recommended,
+  tseslint.configs.strictTypeChecked,
+  tseslint.configs.stylisticTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
   {
     rules: {
       'no-console': 'error',
@@ -34,6 +43,7 @@ export default [
         },
         multilineDetection: 'brackets',
       }],
+      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       '@typescript-eslint/no-unused-vars': ['error', {
         args: 'all',
         argsIgnorePattern: '^_',
@@ -43,6 +53,19 @@ export default [
         varsIgnorePattern: '^_',
         ignoreRestSiblings: true,
       }],
+      '@typescript-eslint/no-unnecessary-condition': ['error', {
+        allowConstantLoopConditions: 'only-allowed-literals',
+        checkTypePredicates: true,
+      }],
+      '@typescript-eslint/restrict-template-expressions': ['error', {
+        allow: [{ name: ['Error', 'URL', 'URLSearchParams'], from: 'lib' }],
+        allowAny: false,
+        allowBoolean: false,
+        allowNever: false,
+        allowNullish: false,
+        allowNumber: true,
+        allowRegExp: false,
+      }],
     },
-  },
-];
+  }
+);

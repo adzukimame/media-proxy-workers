@@ -11,7 +11,7 @@ const TYPE_OCTET_STREAM = {
 //   ext: 'svg',
 // };
 
-export async function detectType(buffer: ArrayBuffer): Promise<{
+export async function detectType(buffer: Uint8Array): Promise<{
   mime: string;
   ext: string | null;
 }> {
