@@ -1,0 +1,12 @@
+{
+  "name": "media-proxy-worker",
+  "main": "src/index.ts",
+  "workers_dev": false,
+  "compatibility_date": "2024-09-23",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
