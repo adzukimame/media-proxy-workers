@@ -1,8 +1,9 @@
 import { Buffer } from 'node:buffer';
-import { z } from 'zod/v4';
+import { z } from 'zod/v4-mini';
 import sjson from 'secure-json-parse';
 import { FILE_TYPE_BROWSERSAFE } from './const.js';
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import { detectType } from './file-info.js';
 import { StatusError } from './status-error.js';
 import { defaultDownloadConfig, downloadUrl } from './download.js';
@@ -71,14 +72,14 @@ app.get('/favicon.ico', (ctx) => {
   return ctx.body(null, 204);
 });
 
-app.get('*', async (ctx) => {
-  let proxyUrl: URL | string | undefined = ctx.req.query('url');
+const requestValidator = zValidator(
+  'query',
+  z.object({ url: z.url() }),
+  ({ success }) => { if (!success) throw new StatusError('URL is required', 400); }
+);
 
-  if (proxyUrl === undefined || !URL.canParse(proxyUrl)) {
-    throw new StatusError('URL is required', 400);
-  }
-
-  proxyUrl = new URL(proxyUrl);
+app.get('*', requestValidator, async (ctx) => {
+  const proxyUrl = new URL(ctx.req.valid('query').url);
 
   if (proxyUrl.host === ctx.env.AVATAR_REDIRECT_HOST && proxyUrl.pathname.startsWith('/avatar/') && ctx.env.AVATAR_REDIRECT_ENABLED) {
     let rdr;
@@ -151,9 +152,7 @@ app.onError(async (err, ctx) => {
         Buffer.from(pemContents, 'base64'),
         {
           name: 'RSASSA-PKCS1-v1_5',
-          hash: {
-            name: 'SHA-256',
-          },
+          hash: { name: 'SHA-256' },
         },
         false,
         ['sign']
