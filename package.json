@@ -13,7 +13,7 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.49",
     "@cloudflare/workers-types": "^4.20250704.0",
-    "@stylistic/eslint-plugin": "^4.4.1",
+    "@stylistic/eslint-plugin": "^5.1.0",
     "@tsconfig/strictest": "^2.0.5",
     "@types/content-disposition": "^0.5.9",
     "eslint": "^9.30.1",
