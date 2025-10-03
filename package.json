@@ -11,14 +11,14 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.68",
-    "@cloudflare/workers-types": "^4.20250829.0",
-    "@stylistic/eslint-plugin": "^5.2.3",
-    "@tsconfig/strictest": "^2.0.5",
+    "@cloudflare/vitest-pool-workers": "^0.9.10",
+    "@cloudflare/workers-types": "^4.20251003.0",
+    "@stylistic/eslint-plugin": "^5.4.0",
+    "@tsconfig/strictest": "^2.0.6",
     "@types/content-disposition": "^0.5.9",
-    "eslint": "^9.34.0",
+    "eslint": "^9.37.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.41.0",
+    "typescript-eslint": "^8.45.0",
     "vitest": "3.1.4"
   },
   "dependencies": {
