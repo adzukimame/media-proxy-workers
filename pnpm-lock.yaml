@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@hono/zod-validator':
         specifier: ^0.7.2
-        version: 0.7.2(hono@4.9.2)(zod@4.0.17)
+        version: 0.7.2(hono@4.9.7)(zod@4.0.17)
       content-disposition:
         specifier: ^0.5.4
         version: 0.5.4
@@ -18,8 +18,8 @@ importers:
         specifier: ^21.0.0
         version: 21.0.0
       hono:
-        specifier: ^4.9.2
-        version: 4.9.2
+        specifier: ^4.9.7
+        version: 4.9.7
       is-svg:
         specifier: ^6.1.0
         version: 6.1.0
@@ -1187,8 +1187,8 @@ packages:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
 
-  hono@4.9.2:
-    resolution: {integrity: sha512-UG2jXGS/gkLH42l/1uROnwXpkjvvxkl3kpopL3LBo27NuaDPI6xHNfuUSilIHcrBkPfl4y0z6y2ByI455TjNRw==}
+  hono@4.9.7:
+    resolution: {integrity: sha512-t4Te6ERzIaC48W3x4hJmBwgNlLhmiEdEE5ViYb02ffw4ignHNHa5IBtPjmbKstmtKa8X6C35iWwK4HaqvrzG9w==}
     engines: {node: '>=16.9.0'}
 
   ieee754@1.2.1:
@@ -1964,9 +1964,9 @@ snapshots:
       sax: 1.4.1
       strtok3: 10.3.1
 
-  '@hono/zod-validator@0.7.2(hono@4.9.2)(zod@4.0.17)':
+  '@hono/zod-validator@0.7.2(hono@4.9.7)(zod@4.0.17)':
     dependencies:
-      hono: 4.9.2
+      hono: 4.9.7
       zod: 4.0.17
 
   '@humanfs/core@0.19.1': {}
@@ -2647,7 +2647,7 @@ snapshots:
 
   has-flag@4.0.0: {}
 
-  hono@4.9.2: {}
+  hono@4.9.7: {}
 
   ieee754@1.2.1: {}
 
