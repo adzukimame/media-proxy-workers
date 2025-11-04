@@ -18,6 +18,7 @@ export interface Env extends Record<string, unknown> {
   AVATAR_REDIRECT_HOST?: string;
   CLOUD_LOGGING_ENABLED?: boolean;
   CLOUD_LOGGING_LOGNAME?: string;
+  CLOUD_LOGGING_NAMESPACE?: string;
   CLOUD_LOGGING_CREDENTIAL_JSON?: string;
 }
 
@@ -179,14 +180,14 @@ app.onError(async (err, ctx) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            logName: ctx.env.CLOUD_LOGGING_LOGNAME ?? `projects/${serviceAccount.project_id}/logs/misskey-media-proxy`,
+            logName: ctx.env.CLOUD_LOGGING_LOGNAME ?? `projects/${serviceAccount.project_id}/logs/media-proxy-access`,
             resource: {
               type: 'generic_task',
               labels: {
                 project_id: serviceAccount.project_id,
                 location: 'cloudflare-workers',
-                namespace: 'misskey-media-proxy',
-                job: 'misskey-media-proxy',
+                namespace: ctx.env.CLOUD_LOGGING_NAMESPACE ?? 'production',
+                job: 'media-proxy',
                 task_id: ctx.req.header('Cf-Ray'),
               },
             },
