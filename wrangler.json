@@ -1,5 +1,5 @@
 {
-  "name": "media-proxy-worker",
+  "name": "media-proxy-workers",
   "main": "src/index.ts",
   "workers_dev": false,
   "compatibility_date": "2024-09-23",
