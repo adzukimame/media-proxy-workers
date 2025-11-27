@@ -14,7 +14,7 @@ export const defaultDownloadConfig: DownloadConfig = {
 
 export async function downloadUrl(url: URL, settings: DownloadConfig = defaultDownloadConfig): Promise<{
   filename: string;
-  buffer: Uint8Array;
+  buffer: ArrayBuffer;
 }> {
   let filename = url.pathname.split('/').pop() ?? 'unknown';
 
@@ -59,6 +59,6 @@ export async function downloadUrl(url: URL, settings: DownloadConfig = defaultDo
 
   return {
     filename,
-    buffer: new Uint8Array(await res.arrayBuffer()),
+    buffer: await res.arrayBuffer(),
   };
 }
