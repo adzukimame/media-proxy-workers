@@ -59,7 +59,7 @@ app.use(async (ctx, next) => {
       // nop
     }
     else {
-      ctx.header('Cache-Control', 'private');
+      ctx.header('Cache-Control', 'private, no-store');
       return ctx.body(null, 400);
     }
   }
@@ -81,6 +81,18 @@ const requestValidator = zValidator(
 
 app.get('*', requestValidator, async (ctx) => {
   const proxyUrl = new URL(ctx.req.valid('query').url);
+
+  const userAgent = ctx.req.header('User-Agent');
+  if (userAgent === defaultDownloadConfig.userAgent) {
+    ctx.header('Cache-Control', 'private, no-store');
+    return ctx.body(null, 400);
+  }
+
+  const requestHost = ctx.req.header('Host');
+  if (requestHost && proxyUrl.host === requestHost) {
+    ctx.header('Cache-Control', 'private, no-store');
+    return ctx.body(null, 400);
+  }
 
   if (proxyUrl.host === ctx.env.AVATAR_REDIRECT_HOST && proxyUrl.pathname.startsWith('/avatar/') && ctx.env.AVATAR_REDIRECT_ENABLED) {
     let rdr;
