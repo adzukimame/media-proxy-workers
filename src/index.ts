@@ -6,7 +6,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { detectType } from './file-info.js';
 import { StatusError } from './status-error.js';
-import { defaultDownloadConfig, downloadUrl, DEFAULT_DOWNLOAD_USER_AGENT } from './download.js';
+import { defaultDownloadConfig, downloadUrl } from './download.js';
 import _contentDisposition from 'content-disposition';
 import { StatusCode } from 'hono/utils/http-status';
 import { convertToStatic } from './convert.js';
@@ -83,7 +83,7 @@ app.get('*', requestValidator, async (ctx) => {
   const proxyUrl = new URL(ctx.req.valid('query').url);
 
   const userAgent = ctx.req.header('User-Agent');
-  if (userAgent === DEFAULT_DOWNLOAD_USER_AGENT) {
+  if (userAgent === defaultDownloadConfig.userAgent) {
     ctx.header('Cache-Control', 'private, no-store');
     return ctx.body(null, 400);
   }
