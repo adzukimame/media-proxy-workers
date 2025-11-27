@@ -120,10 +120,10 @@ app.get('*', requestValidator, async (ctx) => {
   }
 
   // Create temp file
-  let file = await downloadAndDetectTypeFromUrl(proxyUrl);
+  const file = await downloadAndDetectTypeFromUrl(proxyUrl);
 
   if (ctx.req.query('static') !== undefined || ctx.req.query('preview') !== undefined || ctx.req.query('badge') !== undefined) {
-    file = convertToStatic(file);
+    file.buffer = convertToStatic(file.buffer, file.mime);
   }
 
   if (file.mime === 'image/svg+xml') {
@@ -269,7 +269,7 @@ async function downloadAndDetectTypeFromUrl(url: URL): Promise<{
   mime: string;
   ext: string | null;
   filename: string;
-  buffer: Uint8Array;
+  buffer: ArrayBuffer;
 }> {
   const { filename, buffer } = await downloadUrl(url);
 
