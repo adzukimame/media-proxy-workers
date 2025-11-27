@@ -6,7 +6,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { detectType } from './file-info.js';
 import { StatusError } from './status-error.js';
-import { defaultDownloadConfig, downloadUrl } from './download.js';
+import { defaultDownloadConfig, downloadUrl, DEFAULT_DOWNLOAD_USER_AGENT } from './download.js';
 import _contentDisposition from 'content-disposition';
 import { StatusCode } from 'hono/utils/http-status';
 import { convertToStatic } from './convert.js';
@@ -59,7 +59,7 @@ app.use(async (ctx, next) => {
       // nop
     }
     else {
-      ctx.header('Cache-Control', 'private');
+      ctx.header('Cache-Control', 'private, no-store');
       return ctx.body(null, 400);
     }
   }
@@ -81,6 +81,18 @@ const requestValidator = zValidator(
 
 app.get('*', requestValidator, async (ctx) => {
   const proxyUrl = new URL(ctx.req.valid('query').url);
+
+  const userAgent = ctx.req.header('User-Agent');
+  if (userAgent === DEFAULT_DOWNLOAD_USER_AGENT) {
+    ctx.header('Cache-Control', 'private, no-store');
+    return ctx.body(null, 400);
+  }
+
+  const requestHost = ctx.req.header('Host');
+  if (requestHost && proxyUrl.host === requestHost) {
+    ctx.header('Cache-Control', 'private, no-store');
+    return ctx.body(null, 400);
+  }
 
   if (proxyUrl.host === ctx.env.AVATAR_REDIRECT_HOST && proxyUrl.pathname.startsWith('/avatar/') && ctx.env.AVATAR_REDIRECT_ENABLED) {
     let rdr;
