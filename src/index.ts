@@ -221,8 +221,12 @@ app.onError(async (err, ctx) => {
                   xForwardedFor: ctx.req.header('X-Forwarded-For'),
                   country: ctx.req.raw.cf?.country,
                   proxyUrl: ctx.req.query('url'),
-                  // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                  error: err.toString(),
+                  error: {
+                    name: err.name,
+                    message: err.message,
+                    stack: err.stack,
+                    cause: err.cause,
+                  },
                   originalError: err instanceof StatusError && err.origin ? err.origin.toString() : undefined,
                 },
               },
