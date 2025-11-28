@@ -47,7 +47,7 @@ export async function downloadUrl(url: URL, settings: DownloadConfig = defaultDo
 export async function streamUrl(url: URL, settings: DownloadConfig = defaultDownloadConfig): Promise<{
   contentDisposition: string | null;
   contentLength: number | null;
-  stream: ReadableStream | null;
+  data: ReadableStream | null;
 }> {
   const res = await fetch(url, {
     headers: {
@@ -73,6 +73,6 @@ export async function streamUrl(url: URL, settings: DownloadConfig = defaultDown
   return {
     contentDisposition: res.headers.get('content-disposition'),
     contentLength: contentLength !== null ? Number(contentLength) : null,
-    stream: res.body,
+    data: res.body,
   };
 }

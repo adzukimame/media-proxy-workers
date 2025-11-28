@@ -20,9 +20,6 @@ importers:
       hono:
         specifier: ^4.10.7
         version: 4.10.7
-      is-svg:
-        specifier: ^6.1.0
-        version: 6.1.0
       secure-json-parse:
         specifier: ^4.1.0
         version: 4.1.0
@@ -469,9 +466,6 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@file-type/xml@0.4.3':
-    resolution: {integrity: sha512-pGRmkHf+NofNy/52r06HOTsEwdNnBsFEhN6U95s33P+ezuoxZEyBTV9lOB1/Zr0So6/9vDVfWZXLpgd0fy8cOQ==}
 
   '@hono/zod-validator@0.7.5':
     resolution: {integrity: sha512-n4l4hutkfYU07PzRUHBOVzUEn38VSfrh+UVE5d0w4lyfWDOEhzxIupqo5iakRiJL44c3vTuFJBvcmUl8b9agIA==}
@@ -1155,10 +1149,6 @@ packages:
     resolution: {integrity: sha512-xelSayHH36ZgE7ZWhli7pW34hNbNl8Ojv5KVmkJD4hBdD3th8Tfk9vYasLM+mXWOZhFkgZfxhLSnrwRr4elSSg==}
     engines: {node: '>=0.10.0'}
 
-  is-svg@6.1.0:
-    resolution: {integrity: sha512-i7YPdvYuSCYcaLQrKwt8cvKTlwHcdA6Hp8N9SO3Q5jIzo8x6kH3N47W0BvPP7NdxVBmIHx7X9DK36czYYW7lHg==}
-    engines: {node: '>=20'}
-
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
@@ -1288,9 +1278,6 @@ packages:
     resolution: {integrity: sha512-cPmwD3FnFv8rKMBc1MxWCwVQFxwf1JEmSX3iQXrRVVG15zerAIXRjMFVWnd5Q5QvgKF7Aj+5ykXFhUl+QGnyOw==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
-
-  sax@1.4.1:
-    resolution: {integrity: sha512-+aWOz7yVScEGoKNd4PA10LZ8sk0A/z5+nXQG5giUO5rprX9jgYsTdov9qCchZiPIZezbZH+jRut8nPodFAX4Jg==}
 
   secure-json-parse@4.1.0:
     resolution: {integrity: sha512-l4KnYfEyqYJxDwlNVyRfO2E4NTHfMKAWdUuA8J0yve2Dz/E/PdBepY03RvyJpssIpRFwJoCD55wA+mEDs6ByWA==}
@@ -1808,11 +1795,6 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
-
-  '@file-type/xml@0.4.3':
-    dependencies:
-      sax: 1.4.1
-      strtok3: 10.3.4
 
   '@hono/zod-validator@0.7.5(hono@4.10.7)(zod@4.1.13)':
     dependencies:
@@ -2477,10 +2459,6 @@ snapshots:
     dependencies:
       is-extglob: 2.1.1
 
-  is-svg@6.1.0:
-    dependencies:
-      '@file-type/xml': 0.4.3
-
   isexe@2.0.0: {}
 
   js-yaml@4.1.1:
@@ -2622,8 +2600,6 @@ snapshots:
       '@rollup/rollup-win32-ia32-msvc': 4.41.1
       '@rollup/rollup-win32-x64-msvc': 4.41.1
       fsevents: 2.3.3
-
-  sax@1.4.1: {}
 
   secure-json-parse@4.1.0: {}
 
