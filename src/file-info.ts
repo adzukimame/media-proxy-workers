@@ -44,7 +44,7 @@ export async function detectStreamType(data: ReadableStream | null): Promise<{
     };
   }
 
-  const streamWithFileType = await fileTypeStream(data, { sampleSize: 1024 });
+  const streamWithFileType = await fileTypeStream(data, { sampleSize: 4100 });
 
   if (streamWithFileType.fileType) {
     if (!isMimeImage(streamWithFileType.fileType.mime, 'safe-file')) {

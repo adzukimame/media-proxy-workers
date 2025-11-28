@@ -1,15 +1,18 @@
 import { Buffer } from 'node:buffer';
-import { z } from 'zod/v4-mini';
+
 import sjson from 'secure-json-parse';
-import { FILE_TYPE_BROWSERSAFE } from './const.js';
 import { Hono } from 'hono';
+import { StatusCode } from 'hono/utils/http-status';
 import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod/v4-mini';
+import _contentDisposition, { parse as parseContentDisposition } from 'content-disposition';
+
+import { FILE_TYPE_BROWSERSAFE } from './const.js';
 import { detectStreamType, detectType } from './file-info.js';
 import { StatusError } from './status-error.js';
 import { defaultDownloadConfig, downloadUrl, streamUrl } from './download.js';
-import _contentDisposition, { parse as parseContentDisposition } from 'content-disposition';
-import { StatusCode } from 'hono/utils/http-status';
 import { convertToStatic } from './convert.js';
+import { ConvertWebpToStaticStream } from './convert-stream.js';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface Env extends Record<string, unknown> {
@@ -156,7 +159,7 @@ app.get('*', requestValidator, async (ctx) => {
       )
     );
 
-    ctx.header('Content-Length', file.contentLength?.toString() ?? '0');
+    if (file.contentLength !== null) ctx.header('Content-Length', file.contentLength.toString());
 
     if (streamWithFileType === null) {
       return ctx.body(null, 204);
@@ -166,12 +169,8 @@ app.get('*', requestValidator, async (ctx) => {
     }
   }
 
-  const file = await downloadUrl(proxyUrl);
-  const { mime, ext } = await detectType(file.buffer);
-
-  if (ctx.req.query('static') !== undefined || ctx.req.query('preview') !== undefined || ctx.req.query('badge') !== undefined) {
-    file.buffer = convertToStatic(file.buffer, mime);
-  }
+  const file = await streamUrl(proxyUrl);
+  const { mime, ext, data: streamWithFileType } = await detectStreamType(file.data);
 
   if (mime === 'image/svg+xml') {
     throw new StatusError(`Rejected type (${mime})`, 403);
@@ -202,9 +201,18 @@ app.get('*', requestValidator, async (ctx) => {
     )
   );
 
-  ctx.header('Content-Length', file.buffer.byteLength.toString());
+  // ctx.header('Content-Length', file.buffer.byteLength.toString());
 
-  return ctx.body(file.buffer);
+  if (streamWithFileType === null) {
+    return ctx.body(null, 204);
+  }
+  else if (mime === 'image/webp') {
+    if (file.contentLength !== null) ctx.header('Content-Length', file.contentLength.toString());
+    return ctx.body(streamWithFileType.pipeThrough(new ConvertWebpToStaticStream()) as ReadableStream);
+  }
+  else {
+    return ctx.body(streamWithFileType as ReadableStream);
+  }
 });
 
 const cloudLoggingCredentialSchema = z.object({
