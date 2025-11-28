@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- アクセス前に添え字をすべてチェックする */
-/* eslint-disable no-console */
 
 export class ConvertWebpToStaticStream extends TransformStream<Uint8Array, Uint8Array> {
   constructor() {
@@ -34,7 +33,6 @@ export class ConvertWebpToStaticStream extends TransformStream<Uint8Array, Uint8
 
           // if chunk header is not 'VP8X' or 'A' flag is false
           if (!(buffer[12] === 0x56 && buffer[13] === 0x50 && buffer[14] === 0x38 && buffer[15] === 0x58 && ((buffer[20]! & 0b00000010) !== 0))) {
-            // Not animated WebP - pass through
             controller.enqueue(buffer);
             buffer = new Uint8Array(0);
             passThrough = true;
@@ -42,30 +40,25 @@ export class ConvertWebpToStaticStream extends TransformStream<Uint8Array, Uint8
             return;
           }
 
-          // ヘッダー検証完了、最初の30バイトを出力
           controller.enqueue(buffer.subarray(0, 30));
           buffer = buffer.subarray(30);
           _processedBytes += 30;
           headerValidated = true;
         }
 
-        // チャンク処理ループ
         while (buffer.length >= 8) {
-          // チャンクヘッダーを読む (8 bytes)
           const chunkName = buffer.subarray(0, 4);
           const chunkSize = buffer[4]! + (buffer[5]! << 8) + (buffer[6]! << 16) + (buffer[7]! << 24);
           const totalChunkSize = 8 + chunkSize;
 
-          // チャンク全体が揃っているか確認
           if (buffer.length < totalChunkSize) {
             // チャンクが不完全なので、次の transform を待つ
             break;
           }
 
-          // チャンク全体を取得
           const chunkData = buffer.subarray(0, totalChunkSize);
 
-          // ANIMチャンクの処理
+          // ANIM chunk
           if (chunkName[0] === 0x41 && chunkName[1] === 0x4e && chunkName[2] === 0x49 && chunkName[3] === 0x4d) {
             // ANIM chunk - set loop count to 1
             // Loop count is at offset 12-13 (relative to chunk start)
@@ -75,10 +68,9 @@ export class ConvertWebpToStaticStream extends TransformStream<Uint8Array, Uint8
             }
             controller.enqueue(chunkData);
           }
-          // ANMFチャンクの処理
+          // ANMF chunk
           else if (chunkName[0] === 0x41 && chunkName[1] === 0x4e && chunkName[2] === 0x4d && chunkName[3] === 0x46) {
-            // ANMF chunk - set frame duration to max (4.5h = 0xffffff ms)
-            // Frame duration is at offset 20-22 (relative to chunk start)
+            // set frame duration to max (0xffffff ms = 4.5 h)
             if (chunkData.length >= 23) {
               chunkData[20] = 0xff;
               chunkData[21] = 0xff;
@@ -86,13 +78,11 @@ export class ConvertWebpToStaticStream extends TransformStream<Uint8Array, Uint8
             }
             controller.enqueue(chunkData);
           }
-          // その他のチャンク
+          // other chunks
           else {
-            // Pass through unchanged
             controller.enqueue(chunkData);
           }
 
-          // バッファから処理済みチャンクを削除
           buffer = buffer.subarray(totalChunkSize);
           _processedBytes += totalChunkSize;
         }
@@ -129,12 +119,11 @@ export class ConvertPngToStaticStream extends TransformStream<Uint8Array, Uint8A
 
         // validate PNG header (signature)
         if (!headerValidated) {
-          // PNG signature is not completely received
           if (buffer.length < 8) {
+            // PNG signature is not completely received
             return;
           }
 
-          // シグニチャ検証完了、最初の8バイトを出力
           controller.enqueue(buffer.subarray(0, 8));
           buffer = buffer.subarray(8);
           _processedBytes += 8;
@@ -143,18 +132,15 @@ export class ConvertPngToStaticStream extends TransformStream<Uint8Array, Uint8A
 
         // チャンク処理ループ
         while (buffer.length >= 12) {
-          // チャンクヘッダーを読む (8 bytes)
           const chunkType = buffer.subarray(4, 8);
           const chunkSize = (buffer[0]! << 24) + (buffer[1]! << 16) + (buffer[2]! << 8) + (buffer[3]!);
           const totalChunkSize = 12 + chunkSize;
 
-          // チャンク全体が揃っているか確認
           if (buffer.length < totalChunkSize) {
             // チャンクが不完全なので、次の transform を待つ
             break;
           }
 
-          // チャンク全体を取得
           const chunkData = buffer.subarray(0, totalChunkSize);
 
           if (
@@ -167,16 +153,12 @@ export class ConvertPngToStaticStream extends TransformStream<Uint8Array, Uint8A
             break;
           }
 
-          // chunkを書き出す
           controller.enqueue(chunkData);
-
-          // バッファから処理済みチャンクを削除
           buffer = buffer.subarray(totalChunkSize);
           _processedBytes += totalChunkSize;
         }
       },
       flush(controller) {
-        // 残りのバッファを出力（truncated dataの場合）
         if (buffer.length > 0) {
           controller.enqueue(buffer);
         }
@@ -206,10 +188,7 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
         // nop
       },
       transform(chunk, controller) {
-        console.log(new Date(), 'chunk', chunk.length);
         if (done) {
-          console.log(new Date(), 'already done');
-          // After first image block, we're done - don't output anything more
           return;
         }
 
@@ -222,25 +201,23 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
         // validate GIF header and Logical Screen Descriptor
         if (!headerProcessed) {
           if (buffer.length < 13) {
-            return; // Wait for complete header
+            return;
           }
 
-          // Parse global color table flag and size from byte 10
           globalColorTableFlag = (buffer[10]! & 0b10000000) !== 0;
           globalColorTableSize = (2 ** ((buffer[10]! & 0b00000111) + 1)) * 3;
 
-          // Output header (13 bytes: GIF header + Logical Screen Descriptor)
           controller.enqueue(buffer.subarray(0, 13));
           buffer = buffer.subarray(13);
           _processedBytes += 13;
           headerProcessed = true;
         }
 
-        // Phase 2: Global Color Table
+        // Global Color Table
         if (!globalColorTableProcessed) {
           if (globalColorTableFlag) {
             if (buffer.length < globalColorTableSize) {
-              return; // Wait for complete color table
+              return;
             }
             controller.enqueue(buffer.subarray(0, globalColorTableSize));
             buffer = buffer.subarray(globalColorTableSize);
@@ -253,7 +230,7 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
         while (buffer.length > 0) {
           if (isInMiddleOfSubBlockChain) {
             const currentSubBlockSize = buffer[0]!;
-            console.log(new Date(), 'isInMiddleOfSubBlockChain', currentSubBlockSize);
+
             if (isCurrentSubBlockNetscape && currentSubBlockSize === 3 && buffer.length >= 4) {
               buffer[2] = 0x01;
               buffer[3] = 0x00;
@@ -266,13 +243,11 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
             }
 
             if (currentSubBlockSize === 0) {
-              console.log(new Date(), 'currentSubBlockSize === 0');
               controller.enqueue(buffer.subarray(0, 1));
               buffer = buffer.subarray(1);
               _processedBytes += 1;
 
               if (shouldBeDoneAfterCurrentSubBlockChain) {
-                console.log(new Date(), 'shouldBeDoneAfterCurrentSubBlockChain');
                 // Output trailer (0x3b)
                 controller.enqueue(new Uint8Array([0x3b]));
                 _processedBytes += 1;
@@ -281,12 +256,10 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
               }
             }
             else if (buffer.length < currentSubBlockSize + 1) {
-              console.log(new Date(), 'buffer.length < currentSubBlockSize + 1');
-              isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+              isInMiddleOfSubBlockChain = true;
               return;
             }
             else {
-              console.log(new Date(), 'buffer.length >= currentSubBlockSize + 1');
               controller.enqueue(buffer.subarray(0, currentSubBlockSize + 1));
               buffer = buffer.subarray(currentSubBlockSize + 1);
               _processedBytes += currentSubBlockSize + 1;
@@ -300,7 +273,6 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
 
           // Extension Block (0x21)
           if (blockType === 0x21) {
-            console.log(new Date(), 'extension block');
             if (buffer.length < 2) {
               return; // Wait for extension type
             }
@@ -309,8 +281,6 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
 
             // Application Extension (0xff)
             if (extensionType === 0xff) {
-              console.log(new Date(), 'application extension');
-
               // 簡単のためにapplication名+サブブロック長まで入っていることを期待する
               if (buffer.length < 15) {
                 return;
@@ -320,7 +290,7 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
               buffer = buffer.subarray(2);
               _processedBytes += 2;
 
-              // Check if this is NETSCAPE2.0 extension
+              // NETSCAPE2.0
               const isNetscape = buffer[1] === 0x4e && buffer[2] === 0x45 && buffer[3] === 0x54
                 && buffer[4] === 0x53 && buffer[5] === 0x43 && buffer[6] === 0x41
                 && buffer[7] === 0x50 && buffer[8] === 0x45 && buffer[9] === 0x32
@@ -353,9 +323,8 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
             }
             // Graphic Control Extension (0xf9)
             else if (extensionType === 0xf9) {
-              console.log(new Date(), 'graphics control extension');
               if (buffer.length < 3) {
-                return; // Wait for complete GCE (8 bytes)
+                return;
               }
 
               controller.enqueue(buffer.subarray(0, 2));
@@ -375,7 +344,7 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
                   break;
                 }
                 else if (buffer.length < currentSubBlockSize + 1) {
-                  isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+                  isInMiddleOfSubBlockChain = true;
                   isCurrentSubBlockGce = true;
                   return;
                 }
@@ -386,16 +355,15 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
                 }
               }
             }
-            // Other Extension Blocks
+            // Unknown Extension Blocks
             else {
-              console.log(new Date(), 'other extension');
-              // Skip extension by reading sub-blocks
               controller.enqueue(buffer.subarray(0, 2));
-              buffer = buffer.subarray(2); // Skip introducer, label and size
+              buffer = buffer.subarray(2);
               _processedBytes += 2;
 
               while (buffer.length > 0) {
                 const currentSubBlockSize = buffer[0]!;
+
                 if (currentSubBlockSize === 0) {
                   controller.enqueue(buffer.subarray(0, 1));
                   buffer = buffer.subarray(1);
@@ -416,20 +384,16 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
           }
           // Image Block (0x2c)
           else if (blockType === 0x2c) {
-            console.log(new Date(), 'image block');
             if (buffer.length < 12) {
-              return; // Wait for complete image descriptor
+              return;
             }
 
-            // Parse local color table info
             const localColorTableFlag = (buffer[9]! & 0b10000000) !== 0;
             const localColorTableSize = (2 ** ((buffer[9]! & 0b00000111) + 1)) * 3;
 
-            // Output local color table if present
             if (localColorTableFlag) {
-              // localColorTableSize + sub-block size header
               if (buffer.length < localColorTableSize + 1) {
-                return; // Wait for complete local color table
+                return;
               }
               controller.enqueue(buffer.subarray(0, localColorTableSize));
               buffer = buffer.subarray(localColorTableSize);
@@ -441,9 +405,9 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
             buffer = buffer.subarray(11);
             _processedBytes += 11;
 
-            // Output all LZW data sub-blocks
             while (buffer.length > 0) {
               const currentSubBlockSize = buffer[0]!;
+
               if (currentSubBlockSize === 0) {
                 controller.enqueue(buffer.subarray(0, 1));
                 buffer = buffer.subarray(1);
@@ -470,8 +434,6 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
           }
           // Trailer (0x3b)
           else if (blockType === 0x3b) {
-            console.log(new Date(), 'trailer');
-            // Output trailer
             controller.enqueue(buffer.subarray(0, 1));
             buffer = buffer.subarray(1);
             _processedBytes += 1;
@@ -482,7 +444,6 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
           else {
             // Invalid GIF structure - should not happen in valid GIFs
             // Just output what we have and mark as done
-            console.error(new Date(), 'Unknown block type');
             controller.enqueue(new Uint8Array([0x3b]));
             _processedBytes += 1;
             done = true;
@@ -492,7 +453,6 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
       },
 
       flush(controller) {
-        // If we haven't finished processing, output remaining buffer (truncated data case)
         if (!done && buffer.length > 0) {
           controller.enqueue(buffer);
         }
