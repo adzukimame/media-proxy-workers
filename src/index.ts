@@ -8,11 +8,10 @@ import { z } from 'zod/v4-mini';
 import _contentDisposition, { parse as parseContentDisposition } from 'content-disposition';
 
 import { FILE_TYPE_BROWSERSAFE } from './const.js';
-import { detectStreamType, detectType } from './file-info.js';
+import { detectStreamType } from './file-info.js';
 import { StatusError } from './status-error.js';
-import { defaultDownloadConfig, downloadUrl, streamUrl } from './download.js';
-import { convertToStatic } from './convert.js';
-import { ConvertPngToStaticStream, ConvertWebpToStaticStream } from './convert-stream.js';
+import { defaultDownloadConfig, streamUrl } from './download.js';
+import { ConvertGifToStaticStream, ConvertPngToStaticStream, ConvertWebpToStaticStream } from './convert-stream.js';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface Env extends Record<string, unknown> {
@@ -212,6 +211,9 @@ app.get('*', requestValidator, async (ctx) => {
   }
   else if (mime === 'image/apng') {
     return ctx.body(streamWithFileType.pipeThrough(new ConvertPngToStaticStream()) as ReadableStream);
+  }
+  else if (mime === 'image/gif') {
+    return ctx.body(streamWithFileType.pipeThrough(new ConvertGifToStaticStream()) as ReadableStream);
   }
   else {
     return ctx.body(streamWithFileType as ReadableStream);

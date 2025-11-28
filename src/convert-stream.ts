@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- アクセス前に添え字をすべてチェックする */
+/* eslint-disable no-console */
 
 export class ConvertWebpToStaticStream extends TransformStream<Uint8Array, Uint8Array> {
   constructor() {
@@ -44,7 +45,7 @@ export class ConvertWebpToStaticStream extends TransformStream<Uint8Array, Uint8
           // ヘッダー検証完了、最初の30バイトを出力
           controller.enqueue(buffer.subarray(0, 30));
           buffer = buffer.subarray(30);
-          _processedBytes = 30;
+          _processedBytes += 30;
           headerValidated = true;
         }
 
@@ -136,7 +137,7 @@ export class ConvertPngToStaticStream extends TransformStream<Uint8Array, Uint8A
           // シグニチャ検証完了、最初の8バイトを出力
           controller.enqueue(buffer.subarray(0, 8));
           buffer = buffer.subarray(8);
-          _processedBytes = 8;
+          _processedBytes += 8;
           headerValidated = true;
         }
 
@@ -177,6 +178,322 @@ export class ConvertPngToStaticStream extends TransformStream<Uint8Array, Uint8A
       flush(controller) {
         // 残りのバッファを出力（truncated dataの場合）
         if (buffer.length > 0) {
+          controller.enqueue(buffer);
+        }
+      },
+    });
+  }
+}
+
+export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8Array> {
+  constructor() {
+    // https://en.wikipedia.org/wiki/GIF
+
+    let buffer = new Uint8Array(0);
+    let _processedBytes = 0;
+    let headerProcessed = false;
+    let globalColorTableFlag = false;
+    let globalColorTableSize = 0;
+    let globalColorTableProcessed = false;
+    let isCurrentSubBlockNetscape = false;
+    let isCurrentSubBlockGce = false;
+    let isInMiddleOfSubBlockChain = false;
+    let shouldBeDoneAfterCurrentSubBlockChain = false;
+    let done = false;
+
+    super({
+      start(_controller) {
+        // nop
+      },
+      transform(chunk, controller) {
+        console.log(new Date(), 'chunk', chunk.length);
+        if (done) {
+          console.log(new Date(), 'already done');
+          // After first image block, we're done - don't output anything more
+          return;
+        }
+
+        // 受信チャンクをバッファに追加
+        const newBuffer = new Uint8Array(buffer.length + chunk.length);
+        newBuffer.set(buffer);
+        newBuffer.set(chunk, buffer.length);
+        buffer = newBuffer;
+
+        // validate GIF header and Logical Screen Descriptor
+        if (!headerProcessed) {
+          if (buffer.length < 13) {
+            return; // Wait for complete header
+          }
+
+          // Parse global color table flag and size from byte 10
+          globalColorTableFlag = (buffer[10]! & 0b10000000) !== 0;
+          globalColorTableSize = (2 ** ((buffer[10]! & 0b00000111) + 1)) * 3;
+
+          // Output header (13 bytes: GIF header + Logical Screen Descriptor)
+          controller.enqueue(buffer.subarray(0, 13));
+          buffer = buffer.subarray(13);
+          _processedBytes += 13;
+          headerProcessed = true;
+        }
+
+        // Phase 2: Global Color Table
+        if (!globalColorTableProcessed) {
+          if (globalColorTableFlag) {
+            if (buffer.length < globalColorTableSize) {
+              return; // Wait for complete color table
+            }
+            controller.enqueue(buffer.subarray(0, globalColorTableSize));
+            buffer = buffer.subarray(globalColorTableSize);
+            _processedBytes += globalColorTableSize;
+          }
+          globalColorTableProcessed = true;
+        }
+
+        // Blocks
+        while (buffer.length > 0) {
+          if (isInMiddleOfSubBlockChain) {
+            const currentSubBlockSize = buffer[0]!;
+            console.log(new Date(), 'isInMiddleOfSubBlockChain', currentSubBlockSize);
+            if (isCurrentSubBlockNetscape && currentSubBlockSize === 3 && buffer.length >= 4) {
+              buffer[2] = 0x01;
+              buffer[3] = 0x00;
+              isCurrentSubBlockNetscape = false;
+            }
+            if (isCurrentSubBlockGce && currentSubBlockSize === 4 && buffer.length >= 5) {
+              buffer[2] = 0xff;
+              buffer[3] = 0xff;
+              isCurrentSubBlockGce = false;
+            }
+
+            if (currentSubBlockSize === 0) {
+              console.log(new Date(), 'currentSubBlockSize === 0');
+              controller.enqueue(buffer.subarray(0, 1));
+              buffer = buffer.subarray(1);
+              _processedBytes += 1;
+
+              if (shouldBeDoneAfterCurrentSubBlockChain) {
+                console.log(new Date(), 'shouldBeDoneAfterCurrentSubBlockChain');
+                // Output trailer (0x3b)
+                controller.enqueue(new Uint8Array([0x3b]));
+                _processedBytes += 1;
+                done = true;
+                return;
+              }
+            }
+            else if (buffer.length < currentSubBlockSize + 1) {
+              console.log(new Date(), 'buffer.length < currentSubBlockSize + 1');
+              isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+              return;
+            }
+            else {
+              console.log(new Date(), 'buffer.length >= currentSubBlockSize + 1');
+              controller.enqueue(buffer.subarray(0, currentSubBlockSize + 1));
+              buffer = buffer.subarray(currentSubBlockSize + 1);
+              _processedBytes += currentSubBlockSize + 1;
+              continue;
+            }
+          }
+
+          isInMiddleOfSubBlockChain = false;
+
+          const blockType = buffer[0]!;
+
+          // Extension Block (0x21)
+          if (blockType === 0x21) {
+            console.log(new Date(), 'extension block');
+            if (buffer.length < 2) {
+              return; // Wait for extension type
+            }
+
+            const extensionType = buffer[1]!;
+
+            // Application Extension (0xff)
+            if (extensionType === 0xff) {
+              console.log(new Date(), 'application extension');
+
+              // 簡単のためにapplication名+サブブロック長まで入っていることを期待する
+              if (buffer.length < 15) {
+                return;
+              }
+
+              controller.enqueue(buffer.subarray(0, 2));
+              buffer = buffer.subarray(2);
+              _processedBytes += 2;
+
+              // Check if this is NETSCAPE2.0 extension
+              const isNetscape = buffer[1] === 0x4e && buffer[2] === 0x45 && buffer[3] === 0x54
+                && buffer[4] === 0x53 && buffer[5] === 0x43 && buffer[6] === 0x41
+                && buffer[7] === 0x50 && buffer[8] === 0x45 && buffer[9] === 0x32
+                && buffer[10] === 0x2e && buffer[11] === 0x30;
+
+              while (buffer.length > 0) {
+                const currentSubBlockSize = buffer[0]!;
+                if (isNetscape && currentSubBlockSize === 3 && buffer.length >= 4) {
+                  buffer[2] = 0x01;
+                  buffer[3] = 0x00;
+                }
+
+                if (currentSubBlockSize === 0) {
+                  controller.enqueue(buffer.subarray(0, 1));
+                  buffer = buffer.subarray(1);
+                  _processedBytes += 1;
+                  break;
+                }
+                else if (buffer.length < currentSubBlockSize + 1) {
+                  isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+                  isCurrentSubBlockNetscape = isNetscape;
+                  return;
+                }
+                else {
+                  controller.enqueue(buffer.subarray(0, currentSubBlockSize + 1));
+                  buffer = buffer.subarray(currentSubBlockSize + 1);
+                  _processedBytes += currentSubBlockSize + 1;
+                }
+              }
+            }
+            // Graphic Control Extension (0xf9)
+            else if (extensionType === 0xf9) {
+              console.log(new Date(), 'graphics control extension');
+              if (buffer.length < 3) {
+                return; // Wait for complete GCE (8 bytes)
+              }
+
+              controller.enqueue(buffer.subarray(0, 2));
+              buffer = buffer.subarray(2);
+
+              while (buffer.length > 0) {
+                const currentSubBlockSize = buffer[0]!;
+                if (currentSubBlockSize === 4 && buffer.length >= 5) {
+                  buffer[2] = 0xff;
+                  buffer[3] = 0xff;
+                }
+
+                if (currentSubBlockSize === 0) {
+                  controller.enqueue(buffer.subarray(0, 1));
+                  buffer = buffer.subarray(1);
+                  _processedBytes += 1;
+                  break;
+                }
+                else if (buffer.length < currentSubBlockSize + 1) {
+                  isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+                  isCurrentSubBlockGce = true;
+                  return;
+                }
+                else {
+                  controller.enqueue(buffer.subarray(0, currentSubBlockSize + 1));
+                  buffer = buffer.subarray(currentSubBlockSize + 1);
+                  _processedBytes += currentSubBlockSize + 1;
+                }
+              }
+            }
+            // Other Extension Blocks
+            else {
+              console.log(new Date(), 'other extension');
+              // Skip extension by reading sub-blocks
+              controller.enqueue(buffer.subarray(0, 2));
+              buffer = buffer.subarray(2); // Skip introducer, label and size
+              _processedBytes += 2;
+
+              while (buffer.length > 0) {
+                const currentSubBlockSize = buffer[0]!;
+                if (currentSubBlockSize === 0) {
+                  controller.enqueue(buffer.subarray(0, 1));
+                  buffer = buffer.subarray(1);
+                  _processedBytes += 1;
+                  break;
+                }
+                else if (buffer.length < currentSubBlockSize + 1) {
+                  isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+                  return;
+                }
+                else {
+                  controller.enqueue(buffer.subarray(0, currentSubBlockSize + 1));
+                  buffer = buffer.subarray(currentSubBlockSize + 1);
+                  _processedBytes += currentSubBlockSize + 1;
+                }
+              }
+            }
+          }
+          // Image Block (0x2c)
+          else if (blockType === 0x2c) {
+            console.log(new Date(), 'image block');
+            if (buffer.length < 12) {
+              return; // Wait for complete image descriptor
+            }
+
+            // Parse local color table info
+            const localColorTableFlag = (buffer[9]! & 0b10000000) !== 0;
+            const localColorTableSize = (2 ** ((buffer[9]! & 0b00000111) + 1)) * 3;
+
+            // Output local color table if present
+            if (localColorTableFlag) {
+              // localColorTableSize + sub-block size header
+              if (buffer.length < localColorTableSize + 1) {
+                return; // Wait for complete local color table
+              }
+              controller.enqueue(buffer.subarray(0, localColorTableSize));
+              buffer = buffer.subarray(localColorTableSize);
+              _processedBytes += localColorTableSize;
+            }
+
+            // 先にLCTのチェックをしたいので順番が逆
+            controller.enqueue(buffer.subarray(0, 11));
+            buffer = buffer.subarray(11);
+            _processedBytes += 11;
+
+            // Output all LZW data sub-blocks
+            while (buffer.length > 0) {
+              const currentSubBlockSize = buffer[0]!;
+              if (currentSubBlockSize === 0) {
+                controller.enqueue(buffer.subarray(0, 1));
+                buffer = buffer.subarray(1);
+                _processedBytes += 1;
+                break;
+              }
+              else if (buffer.length < currentSubBlockSize + 1) {
+                isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+                shouldBeDoneAfterCurrentSubBlockChain = true;
+                return;
+              }
+              else {
+                controller.enqueue(buffer.subarray(0, currentSubBlockSize + 1));
+                buffer = buffer.subarray(currentSubBlockSize + 1);
+                _processedBytes += currentSubBlockSize + 1;
+              }
+            }
+
+            // Output trailer (0x3b)
+            controller.enqueue(new Uint8Array([0x3b]));
+            _processedBytes += 1;
+            done = true;
+            return;
+          }
+          // Trailer (0x3b)
+          else if (blockType === 0x3b) {
+            console.log(new Date(), 'trailer');
+            // Output trailer
+            controller.enqueue(buffer.subarray(0, 1));
+            buffer = buffer.subarray(1);
+            _processedBytes += 1;
+            done = true;
+            return;
+          }
+          // Unknown block type
+          else {
+            // Invalid GIF structure - should not happen in valid GIFs
+            // Just output what we have and mark as done
+            console.error(new Date(), 'Unknown block type');
+            controller.enqueue(new Uint8Array([0x3b]));
+            _processedBytes += 1;
+            done = true;
+            break;
+          }
+        }
+      },
+
+      flush(controller) {
+        // If we haven't finished processing, output remaining buffer (truncated data case)
+        if (!done && buffer.length > 0) {
           controller.enqueue(buffer);
         }
       },
