@@ -26,13 +26,8 @@ function convertWebpToStatic(buffer: ArrayBuffer): ArrayBuffer {
     return buffer;
   }
 
-  const dst = new Uint8Array(new ArrayBuffer(src.byteLength, { maxByteLength: src.byteLength }));
-
   let srcIdx = 30;
-  let dstIdx = 30;
-  let copiedAnmf = false;
   if (30 > srcLength) return buffer; // if extended WebP header is truncated
-  dst.set(src.subarray(0, 30)); // Extended WebP file header
 
   while (srcIdx < srcLength) {
     // if chunk header is truncated
@@ -42,37 +37,24 @@ function convertWebpToStatic(buffer: ArrayBuffer): ArrayBuffer {
 
     // ANMF
     if (src[srcIdx] === 0x41 && src[srcIdx + 1] === 0x4e && src[srcIdx + 2] === 0x4d && src[srcIdx + 3] === 0x46) {
-      // copy only first ANMF chunk
-      if (copiedAnmf) {
-        srcIdx += 8 + chunkSize;
-        continue;
-      }
-      else {
-        copiedAnmf = true;
-      }
+      // set frame duration to max (4.5h)
+      src[srcIdx + 20] = 0b11111111;
+      src[srcIdx + 21] = 0b00000011;
+      // src[srcIdx + 21] = 0b11111111;
+      // src[srcIdx + 22] = 0b11111111;
     }
-
-    dst.set(src.subarray(srcIdx, srcIdx + 8 + chunkSize), dstIdx);
 
     // ANIM
     if (src[srcIdx] === 0x41 && src[srcIdx + 1] === 0x4e && src[srcIdx + 2] === 0x49 && src[srcIdx + 3] === 0x4d) {
       // set loop count to 1
-      dst[dstIdx + 12] = 1;
-      dst[dstIdx + 13] = 0;
+      src[srcIdx + 12] = 1;
+      src[srcIdx + 13] = 0;
     }
 
     srcIdx += 8 + chunkSize;
-    dstIdx += 8 + chunkSize;
   }
 
-  const dstRiffChunkSize = dstIdx - 8;
-  dst[4] = dstRiffChunkSize;
-  dst[5] = dstRiffChunkSize >> 8;
-  dst[6] = dstRiffChunkSize >> 16;
-  dst[7] = dstRiffChunkSize >> 24;
-
-  dst.buffer.resize(dstIdx);
-  return dst.buffer;
+  return src.buffer;
 }
 
 function convertApngToStatic(buffer: ArrayBuffer): ArrayBuffer {
