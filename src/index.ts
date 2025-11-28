@@ -7,7 +7,7 @@ import { zValidator } from '@hono/zod-validator';
 import { detectType } from './file-info.js';
 import { StatusError } from './status-error.js';
 import { defaultDownloadConfig, downloadUrl } from './download.js';
-import _contentDisposition from 'content-disposition';
+import _contentDisposition, { parse as parseContentDisposition } from 'content-disposition';
 import { StatusCode } from 'hono/utils/http-status';
 import { convertToStatic } from './convert.js';
 
@@ -138,12 +138,26 @@ app.get('*', requestValidator, async (ctx) => {
 
   ctx.header('Content-Type', mime);
   ctx.header('Cache-Control', 'public, max-age=31536000, immutable');
+
+  let filename = proxyUrl.pathname.split('/').pop() ?? 'unknown';
+  if (file.contentDisposition !== null) {
+    try {
+      const parsed = parseContentDisposition(file.contentDisposition);
+      if (parsed.parameters['filename']) {
+        filename = parsed.parameters['filename'];
+      }
+    }
+    catch {
+      // nop
+    }
+  }
   ctx.header('Content-Disposition',
     contentDisposition(
       'inline',
-      correctFilename(file.filename, ext)
+      correctFilename(filename, ext)
     )
   );
+
   ctx.header('Content-Length', file.buffer.byteLength.toString());
 
   return ctx.body(file.buffer);
