@@ -124,49 +124,7 @@ app.get('*', requestValidator, async (ctx) => {
     return ctx.redirect(loc, 302);
   }
 
-  if (ctx.req.query('static') === undefined && ctx.req.query('preview') === undefined && ctx.req.query('badge') === undefined) {
-    const file = await streamUrl(proxyUrl);
-
-    const { mime, ext, data: streamWithFileType } = await detectStreamType(file.data);
-
-    if (mime === 'image/svg+xml') {
-      throw new StatusError(`Rejected type (${mime})`, 403);
-    }
-    else if (!(mime.startsWith('image/') || FILE_TYPE_BROWSERSAFE.includes(mime))) {
-      throw new StatusError(`Rejected type (${mime})`, 403);
-    }
-
-    ctx.header('Content-Type', mime);
-    ctx.header('Cache-Control', 'public, max-age=31536000, immutable');
-
-    let filename = proxyUrl.pathname.split('/').pop() ?? 'unknown';
-    if (file.contentDisposition !== null) {
-      try {
-        const parsed = parseContentDisposition(file.contentDisposition);
-        if (parsed.parameters['filename']) {
-          filename = parsed.parameters['filename'];
-        }
-      }
-      catch {
-        // nop
-      }
-    }
-    ctx.header('Content-Disposition',
-      contentDisposition(
-        'inline',
-        correctFilename(filename, ext)
-      )
-    );
-
-    if (file.contentLength !== null) ctx.header('Content-Length', file.contentLength.toString());
-
-    if (streamWithFileType === null) {
-      return ctx.body(null, 204);
-    }
-    else {
-      return ctx.body(streamWithFileType as ReadableStream, 200);
-    }
-  }
+  const serveStatic = ctx.req.query('static') !== undefined || ctx.req.query('preview') !== undefined || ctx.req.query('badge') !== undefined;
 
   const file = await streamUrl(proxyUrl);
   const { mime, ext, data: streamWithFileType } = await detectStreamType(file.data);
@@ -200,22 +158,21 @@ app.get('*', requestValidator, async (ctx) => {
     )
   );
 
-  // ctx.header('Content-Length', file.buffer.byteLength.toString());
-
   if (streamWithFileType === null) {
     return ctx.body(null, 204);
   }
-  else if (mime === 'image/webp') {
+  else if (serveStatic && mime === 'image/webp') {
     if (file.contentLength !== null) ctx.header('Content-Length', file.contentLength.toString());
     return ctx.body(streamWithFileType.pipeThrough(new ConvertWebpToStaticStream()) as ReadableStream);
   }
-  else if (mime === 'image/apng') {
+  else if (serveStatic && mime === 'image/apng') {
     return ctx.body(streamWithFileType.pipeThrough(new ConvertPngToStaticStream()) as ReadableStream);
   }
-  else if (mime === 'image/gif') {
+  else if (serveStatic && mime === 'image/gif') {
     return ctx.body(streamWithFileType.pipeThrough(new ConvertGifToStaticStream()) as ReadableStream);
   }
   else {
+    if (file.contentLength !== null) ctx.header('Content-Length', file.contentLength.toString());
     return ctx.body(streamWithFileType as ReadableStream);
   }
 });
