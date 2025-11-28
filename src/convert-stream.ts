@@ -232,11 +232,13 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
             const currentSubBlockSize = buffer[0]!;
 
             if (isCurrentSubBlockNetscape && currentSubBlockSize === 3 && buffer.length >= 4) {
+              // set loop count to 1
               buffer[2] = 0x01;
               buffer[3] = 0x00;
               isCurrentSubBlockNetscape = false;
             }
             if (isCurrentSubBlockGce && currentSubBlockSize === 4 && buffer.length >= 5) {
+              // delay 0xffff / 100 ms (= 11 min)
               buffer[2] = 0xff;
               buffer[3] = 0xff;
               isCurrentSubBlockGce = false;
@@ -299,6 +301,7 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
               while (buffer.length > 0) {
                 const currentSubBlockSize = buffer[0]!;
                 if (isNetscape && currentSubBlockSize === 3 && buffer.length >= 4) {
+                  // set loop count to 1
                   buffer[2] = 0x01;
                   buffer[3] = 0x00;
                 }
@@ -310,7 +313,7 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
                   break;
                 }
                 else if (buffer.length < currentSubBlockSize + 1) {
-                  isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+                  isInMiddleOfSubBlockChain = true;
                   isCurrentSubBlockNetscape = isNetscape;
                   return;
                 }
@@ -333,6 +336,7 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
               while (buffer.length > 0) {
                 const currentSubBlockSize = buffer[0]!;
                 if (currentSubBlockSize === 4 && buffer.length >= 5) {
+                  // delay 0xffff / 100 s (= 11 min)
                   buffer[2] = 0xff;
                   buffer[3] = 0xff;
                 }
@@ -371,7 +375,7 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
                   break;
                 }
                 else if (buffer.length < currentSubBlockSize + 1) {
-                  isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+                  isInMiddleOfSubBlockChain = true;
                   return;
                 }
                 else {
@@ -415,7 +419,7 @@ export class ConvertGifToStaticStream extends TransformStream<Uint8Array, Uint8A
                 break;
               }
               else if (buffer.length < currentSubBlockSize + 1) {
-                isInMiddleOfSubBlockChain = true; // Incomplete sub-block
+                isInMiddleOfSubBlockChain = true;
                 shouldBeDoneAfterCurrentSubBlockChain = true;
                 return;
               }
