@@ -76,6 +76,8 @@ function convertWebpToStatic(buffer: ArrayBuffer): ArrayBuffer {
 }
 
 function convertApngToStatic(buffer: ArrayBuffer): ArrayBuffer {
+  // https://www.w3.org/TR/png-3/
+
   const src = new Uint8Array(buffer);
   const srcLength = src.length;
   const dst = new Uint8Array(new ArrayBuffer(src.byteLength, { maxByteLength: src.byteLength }));

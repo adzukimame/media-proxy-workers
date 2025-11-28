@@ -12,7 +12,7 @@ import { detectStreamType, detectType } from './file-info.js';
 import { StatusError } from './status-error.js';
 import { defaultDownloadConfig, downloadUrl, streamUrl } from './download.js';
 import { convertToStatic } from './convert.js';
-import { ConvertWebpToStaticStream } from './convert-stream.js';
+import { ConvertPngToStaticStream, ConvertWebpToStaticStream } from './convert-stream.js';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface Env extends Record<string, unknown> {
@@ -209,6 +209,9 @@ app.get('*', requestValidator, async (ctx) => {
   else if (mime === 'image/webp') {
     if (file.contentLength !== null) ctx.header('Content-Length', file.contentLength.toString());
     return ctx.body(streamWithFileType.pipeThrough(new ConvertWebpToStaticStream()) as ReadableStream);
+  }
+  else if (mime === 'image/apng') {
+    return ctx.body(streamWithFileType.pipeThrough(new ConvertPngToStaticStream()) as ReadableStream);
   }
   else {
     return ctx.body(streamWithFileType as ReadableStream);
