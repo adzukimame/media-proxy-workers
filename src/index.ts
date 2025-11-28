@@ -95,50 +95,53 @@ app.get('*', requestValidator, async (ctx) => {
   }
 
   if (proxyUrl.host === ctx.env.AVATAR_REDIRECT_HOST && proxyUrl.pathname.startsWith('/avatar/') && ctx.env.AVATAR_REDIRECT_ENABLED) {
-    let rdr;
-    try {
-      rdr = await fetch(proxyUrl, {
-        redirect: 'manual',
-        headers: {
-          'User-Agent': defaultDownloadConfig.userAgent,
-        },
-        signal: AbortSignal.timeout(60 * 1000),
-      });
-    }
-    catch (e) {
-      throw new StatusError('An error occured while fetching content (avatar image url)', 500, e as Error);
-    }
+    const loc = await fetch(proxyUrl, {
+      redirect: 'manual',
+      headers: {
+        'User-Agent': defaultDownloadConfig.userAgent,
+      },
+      signal: AbortSignal.timeout(60 * 1000),
+    }).then((rdr) => {
+      const loc = rdr.headers.get('Location');
 
-    const loc = rdr.headers.get('Location');
+      if (rdr.status < 300 || rdr.status >= 400 || loc === null) {
+        throw new StatusError(`Target resource could not be fetched (avatar image url, received status: ${rdr.status})`, 404);
+      }
 
-    if (rdr.status < 300 || rdr.status >= 400 || loc === null) {
-      throw new StatusError(`Target resource could not be fetched (avatar image url, received status: ${rdr.status})`, 404);
-    }
+      return loc;
+    }).catch((e: unknown) => {
+      if (e instanceof StatusError) {
+        throw e;
+      }
+      else {
+        throw new StatusError('An error occured while fetching content (avatar image url)', 500, e as Error);
+      }
+    });
 
     ctx.header('Cache-Control', 'public, immutable, max-age=604800');
     return ctx.redirect(loc, 302);
   }
 
-  // Create temp file
-  const file = await downloadAndDetectTypeFromUrl(proxyUrl);
+  const file = await downloadUrl(proxyUrl);
+  const { mime, ext } = await detectType(file.buffer);
 
   if (ctx.req.query('static') !== undefined || ctx.req.query('preview') !== undefined || ctx.req.query('badge') !== undefined) {
-    file.buffer = convertToStatic(file.buffer, file.mime);
+    file.buffer = convertToStatic(file.buffer, mime);
   }
 
-  if (file.mime === 'image/svg+xml') {
-    throw new StatusError(`Rejected type (${file.mime})`, 403);
+  if (mime === 'image/svg+xml') {
+    throw new StatusError(`Rejected type (${mime})`, 403);
   }
-  else if (!(file.mime.startsWith('image/') || FILE_TYPE_BROWSERSAFE.includes(file.mime))) {
-    throw new StatusError(`Rejected type (${file.mime})`, 403);
+  else if (!(mime.startsWith('image/') || FILE_TYPE_BROWSERSAFE.includes(mime))) {
+    throw new StatusError(`Rejected type (${mime})`, 403);
   }
 
-  ctx.header('Content-Type', file.mime);
+  ctx.header('Content-Type', mime);
   ctx.header('Cache-Control', 'public, max-age=31536000, immutable');
   ctx.header('Content-Disposition',
     contentDisposition(
       'inline',
-      correctFilename(file.filename, file.ext)
+      correctFilename(file.filename, ext)
     )
   );
   ctx.header('Content-Length', file.buffer.byteLength.toString());
@@ -268,24 +271,6 @@ export default {
     return res;
   },
 };
-
-async function downloadAndDetectTypeFromUrl(url: URL): Promise<{
-  mime: string;
-  ext: string | null;
-  filename: string;
-  buffer: ArrayBuffer;
-}> {
-  const { filename, buffer } = await downloadUrl(url);
-
-  const { mime, ext } = await detectType(buffer);
-
-  return {
-    mime,
-    ext,
-    filename: correctFilename(filename, ext),
-    buffer,
-  };
-}
 
 function correctFilename(filename: string, ext: string | null) {
   const dotExt = ext ? `.${ext}` : '.unknown';
