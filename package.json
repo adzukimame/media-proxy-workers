@@ -26,7 +26,6 @@
     "content-disposition": "^1.0.1",
     "file-type": "^21.1.1",
     "hono": "^4.10.7",
-    "is-svg": "^6.1.0",
     "secure-json-parse": "^4.1.0",
     "wrangler": "^4.51.0",
     "zod": "^4.1.13"
