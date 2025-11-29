@@ -163,12 +163,15 @@ app.get('*', requestValidator, async (ctx) => {
   }
   else if (serveStatic && mime === 'image/webp') {
     if (file.contentLength !== null) ctx.header('Content-Length', file.contentLength.toString());
+    // @ts-expect-error @types/node側の型定義のせい
     return ctx.body(streamWithFileType.pipeThrough(new ConvertWebpToStaticStream()) as ReadableStream);
   }
   else if (serveStatic && mime === 'image/apng') {
+    // @ts-expect-error @types/node側の型定義のせい
     return ctx.body(streamWithFileType.pipeThrough(new ConvertPngToStaticStream()) as ReadableStream);
   }
   else if (serveStatic && mime === 'image/gif') {
+    // @ts-expect-error @types/node側の型定義のせい
     return ctx.body(streamWithFileType.pipeThrough(new ConvertGifToStaticStream()) as ReadableStream);
   }
   else {

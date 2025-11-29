@@ -71,4 +71,7 @@ export default [
       }],
     },
   },
+  {
+    ignores: ['.wrangler/**/*.{js,ts}'],
+  },
 ];
