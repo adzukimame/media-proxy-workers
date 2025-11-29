@@ -170,9 +170,3 @@ dist
 
 .wrangler/
 .dev.vars
-
-
-# claude
-CLAUDE.md
-/.claude/*
-!/.claude/settings.json

@@ -1,16 +1,21 @@
-import { fileTypeFromBuffer, fileTypeStream } from 'file-type';
-
-import { FILE_TYPE_BROWSERSAFE } from './const.js';
+import { fileTypeFromBuffer } from 'file-type';
+// import isSvg from 'is-svg';
 
 const TYPE_OCTET_STREAM = {
   mime: 'application/octet-stream',
   ext: null,
 };
 
+// const TYPE_SVG = {
+//   mime: 'image/svg+xml',
+//   ext: 'svg',
+// };
+
 export async function detectType(buffer: ArrayBuffer): Promise<{
   mime: string;
   ext: string | null;
 }> {
+  // Check 0 byte
   const fileSize = buffer.byteLength;
   if (fileSize === 0) {
     return TYPE_OCTET_STREAM;
@@ -19,6 +24,11 @@ export async function detectType(buffer: ArrayBuffer): Promise<{
   const type = await fileTypeFromBuffer(buffer);
 
   if (type) {
+    // XMLはSVGかもしれない
+    // if (type.mime === 'application/xml' && await checkSvg(buffer)) {
+    //     return TYPE_SVG;
+    // }
+
     if (!isMimeImage(type.mime, 'safe-file')) {
       return TYPE_OCTET_STREAM;
     }
@@ -29,43 +39,25 @@ export async function detectType(buffer: ArrayBuffer): Promise<{
     };
   }
 
+  // 種類が不明でもSVGかもしれない
+  // if (await checkSvg(buffer)) {
+  //     return TYPE_SVG;
+  // }
+
+  // それでも種類が不明なら application/octet-stream にする
   return TYPE_OCTET_STREAM;
 }
+// async function checkSvg(buffer: ArrayBuffer) {
+//     try {
+//         const size = buffer.byteLength;
+//         if (size > 1 * 1024 * 1024) return false;
+//         return isSvg(new TextDecoder().decode(buffer));
+//     } catch {
+//         return false;
+//     }
+// }
 
-export async function detectStreamType(data: ReadableStream | null): Promise<{
-  mime: string;
-  ext: string | null;
-  data: Awaited<ReturnType<typeof fileTypeStream>> | null;
-}> {
-  if (data === null) {
-    return {
-      ...TYPE_OCTET_STREAM,
-      data: null,
-    };
-  }
-
-  const streamWithFileType = await fileTypeStream(data, { sampleSize: 4100 });
-
-  if (streamWithFileType.fileType) {
-    if (!isMimeImage(streamWithFileType.fileType.mime, 'safe-file')) {
-      return {
-        ...TYPE_OCTET_STREAM,
-        data: streamWithFileType,
-      };
-    }
-
-    return {
-      mime: fixMime(streamWithFileType.fileType.mime),
-      ext: streamWithFileType.fileType.ext,
-      data: streamWithFileType,
-    };
-  }
-
-  return {
-    ...TYPE_OCTET_STREAM,
-    data: streamWithFileType,
-  };
-}
+import { FILE_TYPE_BROWSERSAFE } from './const.js';
 
 const dictionary = {
   'safe-file': FILE_TYPE_BROWSERSAFE,
