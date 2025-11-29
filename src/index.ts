@@ -1,17 +1,15 @@
 import { Buffer } from 'node:buffer';
-
-import sjson from 'secure-json-parse';
-import { Hono } from 'hono';
-import { StatusCode } from 'hono/utils/http-status';
-import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod/v4-mini';
-import _contentDisposition, { parse as parseContentDisposition } from 'content-disposition';
-
+import sjson from 'secure-json-parse';
 import { FILE_TYPE_BROWSERSAFE } from './const.js';
-import { detectStreamType } from './file-info.js';
+import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { detectType } from './file-info.js';
 import { StatusError } from './status-error.js';
-import { defaultDownloadConfig, streamUrl } from './download.js';
-import { ConvertGifToStaticStream, ConvertPngToStaticStream, ConvertWebpToStaticStream } from './convert-stream.js';
+import { defaultDownloadConfig, downloadUrl } from './download.js';
+import _contentDisposition from 'content-disposition';
+import { StatusCode } from 'hono/utils/http-status';
+import { convertToStatic } from './convert.js';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface Env extends Record<string, unknown> {
@@ -97,87 +95,55 @@ app.get('*', requestValidator, async (ctx) => {
   }
 
   if (proxyUrl.host === ctx.env.AVATAR_REDIRECT_HOST && proxyUrl.pathname.startsWith('/avatar/') && ctx.env.AVATAR_REDIRECT_ENABLED) {
-    const loc = await fetch(proxyUrl, {
-      redirect: 'manual',
-      headers: {
-        'User-Agent': defaultDownloadConfig.userAgent,
-      },
-      signal: AbortSignal.timeout(60 * 1000),
-    }).then((rdr) => {
-      const loc = rdr.headers.get('Location');
+    let rdr;
+    try {
+      rdr = await fetch(proxyUrl, {
+        redirect: 'manual',
+        headers: {
+          'User-Agent': defaultDownloadConfig.userAgent,
+        },
+        signal: AbortSignal.timeout(60 * 1000),
+      });
+    }
+    catch (e) {
+      throw new StatusError('An error occured while fetching content (avatar image url)', 500, e as Error);
+    }
 
-      if (rdr.status < 300 || rdr.status >= 400 || loc === null) {
-        throw new StatusError(`Target resource could not be fetched (avatar image url, received status: ${rdr.status})`, 404);
-      }
+    const loc = rdr.headers.get('Location');
 
-      return loc;
-    }).catch((e: unknown) => {
-      if (e instanceof StatusError) {
-        throw e;
-      }
-      else {
-        throw new StatusError('An error occured while fetching content (avatar image url)', 500, e as Error);
-      }
-    });
+    if (rdr.status < 300 || rdr.status >= 400 || loc === null) {
+      throw new StatusError(`Target resource could not be fetched (avatar image url, received status: ${rdr.status})`, 404);
+    }
 
     ctx.header('Cache-Control', 'public, immutable, max-age=604800');
     return ctx.redirect(loc, 302);
   }
 
-  const serveStatic = ctx.req.query('static') !== undefined || ctx.req.query('preview') !== undefined || ctx.req.query('badge') !== undefined;
+  // Create temp file
+  const file = await downloadAndDetectTypeFromUrl(proxyUrl);
 
-  const file = await streamUrl(proxyUrl);
-  const { mime, ext, data: streamWithFileType } = await detectStreamType(file.data);
-
-  if (mime === 'image/svg+xml') {
-    throw new StatusError(`Rejected type (${mime})`, 403);
-  }
-  else if (!(mime.startsWith('image/') || FILE_TYPE_BROWSERSAFE.includes(mime))) {
-    throw new StatusError(`Rejected type (${mime})`, 403);
+  if (ctx.req.query('static') !== undefined || ctx.req.query('preview') !== undefined || ctx.req.query('badge') !== undefined) {
+    file.buffer = convertToStatic(file.buffer, file.mime);
   }
 
-  ctx.header('Content-Type', mime);
+  if (file.mime === 'image/svg+xml') {
+    throw new StatusError(`Rejected type (${file.mime})`, 403);
+  }
+  else if (!(file.mime.startsWith('image/') || FILE_TYPE_BROWSERSAFE.includes(file.mime))) {
+    throw new StatusError(`Rejected type (${file.mime})`, 403);
+  }
+
+  ctx.header('Content-Type', file.mime);
   ctx.header('Cache-Control', 'public, max-age=31536000, immutable');
-
-  let filename = proxyUrl.pathname.split('/').pop() ?? 'unknown';
-  if (file.contentDisposition !== null) {
-    try {
-      const parsed = parseContentDisposition(file.contentDisposition);
-      if (parsed.parameters['filename']) {
-        filename = parsed.parameters['filename'];
-      }
-    }
-    catch {
-      // nop
-    }
-  }
   ctx.header('Content-Disposition',
     contentDisposition(
       'inline',
-      correctFilename(filename, ext)
+      correctFilename(file.filename, file.ext)
     )
   );
+  ctx.header('Content-Length', file.buffer.byteLength.toString());
 
-  if (streamWithFileType === null) {
-    return ctx.body(null, 204);
-  }
-  else if (serveStatic && mime === 'image/webp') {
-    if (file.contentLength !== null) ctx.header('Content-Length', file.contentLength.toString());
-    // @ts-expect-error @types/node側の型定義のせい
-    return ctx.body(streamWithFileType.pipeThrough(new ConvertWebpToStaticStream()) as ReadableStream);
-  }
-  else if (serveStatic && mime === 'image/apng') {
-    // @ts-expect-error @types/node側の型定義のせい
-    return ctx.body(streamWithFileType.pipeThrough(new ConvertPngToStaticStream()) as ReadableStream);
-  }
-  else if (serveStatic && mime === 'image/gif') {
-    // @ts-expect-error @types/node側の型定義のせい
-    return ctx.body(streamWithFileType.pipeThrough(new ConvertGifToStaticStream()) as ReadableStream);
-  }
-  else {
-    if (file.contentLength !== null) ctx.header('Content-Length', file.contentLength.toString());
-    return ctx.body(streamWithFileType as ReadableStream);
-  }
+  return ctx.body(file.buffer);
 });
 
 const cloudLoggingCredentialSchema = z.object({
@@ -302,6 +268,24 @@ export default {
     return res;
   },
 };
+
+async function downloadAndDetectTypeFromUrl(url: URL): Promise<{
+  mime: string;
+  ext: string | null;
+  filename: string;
+  buffer: ArrayBuffer;
+}> {
+  const { filename, buffer } = await downloadUrl(url);
+
+  const { mime, ext } = await detectType(buffer);
+
+  return {
+    mime,
+    ext,
+    filename: correctFilename(filename, ext),
+    buffer,
+  };
+}
 
 function correctFilename(filename: string, ext: string | null) {
   const dotExt = ext ? `.${ext}` : '.unknown';
