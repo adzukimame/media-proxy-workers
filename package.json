@@ -25,7 +25,7 @@
     "@hono/zod-validator": "^0.7.6",
     "content-disposition": "^1.0.1",
     "file-type": "^21.3.0",
-    "hono": "^4.11.9",
+    "hono": "^4.11.10",
     "is-svg": "^6.1.0",
     "secure-json-parse": "^4.1.0",
     "wrangler": "^4.65.0",
