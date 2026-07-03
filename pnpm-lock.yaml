@@ -12,8 +12,8 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0(hono@4.12.27)(zod@4.4.3)
       content-disposition:
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: ^2.0.1
+        version: 2.0.1
       file-type:
         specifier: ^22.0.1
         version: 22.0.1
@@ -1165,8 +1165,8 @@ packages:
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
-  content-disposition@1.1.0:
-    resolution: {integrity: sha512-5jRCH9Z/+DRP7rkvY83B+yGIGX96OYdJmzngqnw2SBSxqCFPd0w2km3s5iawpGX8krnwSGmF0FW5Nhr0Hfai3g==}
+  content-disposition@2.0.1:
+    resolution: {integrity: sha512-e+H0ZXHSWYrENhQzw1LPuP4oF5MzVKmDU6d3hxlvaPEYLLg62MxtQNPRx4SYSuYJSBUgnQIG4HIN2tEtNv7Dog==}
     engines: {node: '>=18'}
 
   cookie@1.1.1:
@@ -2592,7 +2592,7 @@ snapshots:
 
   concat-map@0.0.1: {}
 
-  content-disposition@1.1.0: {}
+  content-disposition@2.0.1: {}
 
   cookie@1.1.1: {}
 
