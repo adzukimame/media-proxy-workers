@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@hono/zod-validator": "^0.9.1",
-    "content-disposition": "^1.1.0",
+    "content-disposition": "^3.1.0",
     "file-type": "^22.3.0",
     "hono": "^4.13.21",
     "is-svg": "^6.1.0",
